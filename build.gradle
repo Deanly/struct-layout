@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group = 'net.deanly'
+version = '0.0.1'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // struct-layout에서 사용할 의존성 추가
+}
