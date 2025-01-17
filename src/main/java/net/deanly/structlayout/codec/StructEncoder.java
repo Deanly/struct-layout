@@ -83,31 +83,54 @@ public class StructEncoder {
     private static <T> byte[] encodeStructField(T instance, Field field, StructField annotation) throws IllegalAccessException {
         Object value = field.get(instance);
 
-        // Retrieve the appropriate Layout for this data type & endianness
         Layout<Object> layout = DataTypeMapping.getLayout(annotation.dataType());
 
-        // Encode the single value into a byte array
-        return layout.encode(value);
+        byte[] bytes = layout.encode(value);
+        layout.printDebug(bytes, 0, field);
+
+        return bytes;
     }
 
     @SuppressWarnings("unchecked")
     private static <T> byte[] encodeSequenceField(T instance, Field field, SequenceField annotation) throws IllegalAccessException {
-        Object[] values = (Object[]) field.get(instance);
+        Object sequence = field.get(instance);
 
-        // Retrieve the appropriate Layout for the sequence element type
-        Layout<Object> layout = DataTypeMapping.getLayout(annotation.elementType());
-
-        // Encode sequence elements into individual chunks
-        List<byte[]> chunks = new ArrayList<>();
-        for (Object value : values) {
-            chunks.add(layout.encode(value));
+        // 값이 null인 경우
+        if (sequence == null) {
+            return new byte[]{0};
         }
 
-        // Add length of the array at the beginning
-        byte[] lengthHeader = new byte[]{(byte) values.length};
+        int length;
+        List<T> elements;
+        if (sequence instanceof List<?>) {
+            elements = (List<T>) sequence;
+            length = elements.size();
+        } else if (sequence.getClass().isArray()) {
+            length = java.lang.reflect.Array.getLength(sequence);
+            elements = new ArrayList<>();
+            for (int i = 0; i < length; i++) {
+                elements.add((T) java.lang.reflect.Array.get(sequence, i));
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported sequence type: " + sequence.getClass());
+        }
 
-        // Merge length header and all encoded elements
-        return mergeChunks(lengthHeader, mergeChunks(chunks));
+        // 길이와 요소 직렬화
+        Layout<Object> lengthLayout = DataTypeMapping.getLayout(annotation.lengthType());
+        Layout<Object> elementLayout = DataTypeMapping.getLayout(annotation.elementType());
+
+        byte[] lengthHeader = lengthLayout.encode(length); // 길이 헤더 직렬화
+        lengthLayout.printDebug(lengthHeader, 0, field);
+
+        List<byte[]> elementChunks = new ArrayList<>();
+        for (Object element : elements) {
+            byte[] elementBytes = elementLayout.encode(element);
+            elementLayout.printDebug(elementBytes, 0, field);
+            elementChunks.add(elementBytes);
+        }
+
+        // Header + Body 병합
+        return mergeChunks(lengthHeader, mergeChunks(elementChunks));
     }
 
     private static byte[] mergeChunks(List<byte[]> chunks) {

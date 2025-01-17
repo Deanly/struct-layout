@@ -26,12 +26,7 @@ public class Float32LELayout extends Layout<Float> {
      */
     @Override
     public Float decode(byte[] data, int offset) {
-        if (data == null) {
-            throw new IllegalArgumentException("Data cannot be null.");
-        }
-        if (offset < 0 || offset + 4 > data.length) {
-            throw new IllegalArgumentException("Invalid offset or insufficient data length.");
-        }
+        validateLength(data, offset);
 
         // Combine the bytes in little-endian order to create an integer representation of the float
         int intBits =

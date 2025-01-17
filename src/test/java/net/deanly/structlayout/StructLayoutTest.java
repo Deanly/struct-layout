@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,7 +25,8 @@ public class StructLayoutTest {
         original.setInt32BeValue(42);
         original.setFloatValue(123.45f);
         original.setStringValue("Hello, StructObject!");
-//        original.setFloatArray(new float[]{3.14f, 1.59f});
+        original.setFloatArray(new float[]{3.14f, 1.59f});
+        original.setDoubleList(List.of(1.23, 4.56));
 //        original.setCustomObject(new CustomObject(7, "NestedStruct"));
 
         // Encode the object
@@ -38,7 +40,8 @@ public class StructLayoutTest {
         assertEquals(original.getInt32BeValue(), deserialized.getInt32BeValue());
         assertEquals(original.getFloatValue(), deserialized.getFloatValue());
         assertEquals(original.getStringValue(), deserialized.getStringValue());
-//        assertArrayEquals(original.getFloatArray(), deserialized.getFloatArray());
+        assertArrayEquals(original.getFloatArray(), deserialized.getFloatArray());
+        assertEquals(original.getDoubleList(), deserialized.getDoubleList());
 //        assertEquals(original.getCustomObject().getId(), deserialized.getCustomObject().getId());
 //        assertEquals(original.getCustomObject().getName(), deserialized.getCustomObject().getName());
     }
@@ -94,9 +97,12 @@ public class StructLayoutTest {
         @StructField(order = 4, dataType = DataType.STRING_C)
         private String stringValue;
 
-//        @SequenceField(elementType = DataType.FLOAT32, lengthBytes = 1)
-//        private float[] floatArray;
-//
+        @SequenceField(order = 5, elementType = DataType.FLOAT32_LE)
+        private float[] floatArray;
+
+        @SequenceField(order = 6, elementType = DataType.FLOAT64_BE)
+        private List<Double> doubleList;
+
 //        @StructObjectField(order = 4)
 //        private CustomObject customObject;
     }

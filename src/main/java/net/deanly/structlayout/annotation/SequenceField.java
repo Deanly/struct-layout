@@ -10,7 +10,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface SequenceField {
-    int order();           // Field's order in the structure
+    /**
+     * Field's order in the structure
+     */
+    int order();
 
     /**
      * The data type of the length prefix, indicating the number of elements in the sequence.

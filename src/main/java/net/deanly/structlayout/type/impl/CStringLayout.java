@@ -1,11 +1,14 @@
 package net.deanly.structlayout.type.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import net.deanly.structlayout.Layout;
 
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+@Slf4j
 public class CStringLayout extends Layout<String> {
 
     private final Charset charset; // 문자열 인코딩 방식
@@ -31,21 +34,26 @@ public class CStringLayout extends Layout<String> {
         byte[] stringBytes = value.getBytes(charset);
 
         // 마지막에 널 종료 문자를 추가
-        byte[] result = new byte[stringBytes.length + 1]; // 1은 널 문자
+        byte[] result = new byte[stringBytes.length + 1];
         System.arraycopy(stringBytes, 0, result, 0, stringBytes.length);
-        result[stringBytes.length] = 0; // 마지막 바이트에 널 문자 삽입
+        result[stringBytes.length] = 0;
+
+        setSpan(result.length);
 
         return result;
     }
 
     @Override
     public String decode(byte[] bytes, int offset) {
+        int length = getSpan(bytes, offset);
+        setSpan(length);
+
         ArrayList<Byte> resultBytes = new ArrayList<>();
 
         // 바이트 배열을 탐색하며 종료 문자인 `\0`을 찾음
         for (int i = offset; i < bytes.length; i++) {
             if (bytes[i] == 0) {
-                break; // 널 문자 발견 시 중단
+                break;
             }
             resultBytes.add(bytes[i]);
         }
@@ -63,9 +71,42 @@ public class CStringLayout extends Layout<String> {
         // 길이를 널 문자를 기준으로 결정해야 하므로 바이트 크기를 동적으로 계산
         for (int i = offset; i < bytes.length; i++) {
             if (bytes[i] == 0) {
-                return i - offset + 1; // 널 문자까지 포함한 길이 반환
+                return i - offset + 1;
             }
         }
         throw new IllegalArgumentException("Null-terminated character not found");
+    }
+
+    @Override
+    public String bytesToHex(byte[] bytes, int offset) {
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("Cannot convert null or empty data to hex.");
+        }
+
+        StringBuilder hexBuilder = new StringBuilder();
+
+        for (int i = offset; i < bytes.length; i++) {
+            hexBuilder.append(String.format("%02X", bytes[i]));
+            hexBuilder.append(" ");
+
+            if (bytes[i] == 0) {
+                break;
+            }
+        }
+
+        if (!hexBuilder.isEmpty()) {
+            hexBuilder.setLength(hexBuilder.length() - 1);
+        }
+
+        return hexBuilder.toString();
+    }
+
+    @Override
+    public void printDebug(byte[] data, int offset, Field field) {
+        if (isTestEnvironment()) {
+            log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: \"{}\"",
+                    field.getDeclaringClass().getSimpleName(), field.getName(),
+                    bytesToHex(data, offset), getSpan(data, offset), decode(data, offset));
+        }
     }
 }
