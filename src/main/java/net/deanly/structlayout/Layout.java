@@ -8,7 +8,6 @@ import net.deanly.structlayout.codec.Encoder;
 import net.deanly.structlayout.codec.Decoder;
 
 import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
 
 /**
  * Abstract class providing encoding and decoding functionality.
@@ -21,11 +20,28 @@ public abstract class Layout<T> implements Encoder<T>, Decoder<T> {
     private int span; // Number of bytes for this layout
     private final String property; // Optional associated property name
 
+    /**
+     * Constructs a Layout with a specified span and an optional property.
+     *
+     * @param span Number of bytes that this Layout will process.
+     *             **This value MUST be explicitly defined by the implementer.**
+     *             It is critical to define the span correctly, as it determines:
+     *               - The number of bytes this layout processes when encoding/decoding.
+     *               - Validation offsets during data processing.
+     * @param property Optional property name associated with the Layout.
+     *                 For example, this can be used for debugging or mapping.
+     */
     public Layout(int span, String property) {
         this.span = span;
         this.property = property;
     }
 
+    /**
+     * Constructs a Layout with a specified span.
+     *
+     * @param span Number of bytes that this Layout will process.
+     *             **This value MUST be explicitly defined by the implementer.**
+     */
     public Layout(int span) {
         this(span, null);
     }
@@ -109,9 +125,13 @@ public abstract class Layout<T> implements Encoder<T>, Decoder<T> {
     public void printDebug(byte[] data, int offset, Field field) {
         if (isTestEnvironment()) {
             if (offset > 0 && offset + getSpan() <= data.length) {
-                log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: {}",
-                        field.getDeclaringClass().getSimpleName(), field.getName(),
-                        bytesToHex(data, offset), getSpan(), decode(data, offset));
+                try {
+                    log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: {}",
+                            field.getDeclaringClass().getSimpleName(), field.getName(),
+                            bytesToHex(data, offset), getSpan(), decode(data, offset));
+                } catch (RuntimeException ex) {
+                    log.debug("[Field: {}.{}] {}", field.getDeclaringClass().getSimpleName(), field.getName(), ex.getMessage());
+                }
             }
         }
     }

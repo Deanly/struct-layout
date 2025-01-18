@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.deanly.structlayout.annotation.SequenceField;
 import net.deanly.structlayout.annotation.StructField;
+import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.type.DataType;
 import net.deanly.structlayout.type.Endianness;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ public class StructLayoutTest {
         original.setStringValue("Hello, StructObject!");
         original.setFloatArray(new float[]{3.14f, 1.59f});
         original.setDoubleList(List.of(1.23, 4.56));
-//        original.setCustomObject(new CustomObject(7, "NestedStruct"));
+        original.setCustomObject(new CustomObject(7, "NestedStruct"));
 
         // Encode the object
         byte[] serializedData = StructLayout.encode(original);
@@ -42,8 +43,8 @@ public class StructLayoutTest {
         assertEquals(original.getStringValue(), deserialized.getStringValue());
         assertArrayEquals(original.getFloatArray(), deserialized.getFloatArray());
         assertEquals(original.getDoubleList(), deserialized.getDoubleList());
-//        assertEquals(original.getCustomObject().getId(), deserialized.getCustomObject().getId());
-//        assertEquals(original.getCustomObject().getName(), deserialized.getCustomObject().getName());
+        assertEquals(original.getCustomObject().getId(), deserialized.getCustomObject().getId());
+        assertEquals(original.getCustomObject().getName(), deserialized.getCustomObject().getName());
     }
 
     @Test
@@ -81,6 +82,32 @@ public class StructLayoutTest {
                 "Little-Endian과 Big-Endian 값이 달라야 합니다.");
     }
 
+    @Test
+    public void debugPrintingTest() {
+        byte[] data = new byte[] {
+                (byte) 0x48, (byte) 0x65, (byte) 0x6c, (byte) 0x6c, (byte) 0x6f,
+                (byte) 0x20, (byte) 0x57, (byte) 0x6f, (byte) 0x72, (byte) 0x6c,
+                (byte) 0x64, (byte) 0x21, (byte) 0x00, (byte) 0x01, (byte) 0x02,
+                (byte) 0x03, (byte) 0x04, (byte) 0x05
+        };
+
+        StructLayout.debug(data);
+    }
+
+    @Test
+    public void debugPrintingTest2() {
+        AllDataTypesStruct struct = new AllDataTypesStruct();
+        struct.setInt32Value(42);
+        struct.setInt32BeValue(42);
+        struct.setFloatValue(123.45f);
+        struct.setStringValue("Hello, StructObject!");
+        struct.setFloatArray(new float[]{3.14f, 1.59f});
+        struct.setDoubleList(List.of(1.23, 4.56));
+        struct.setCustomObject(new CustomObject(7, "NestedStruct"));
+
+        StructLayout.debug(struct);
+    }
+
     @Getter
     @Setter
     public static class AllDataTypesStruct {
@@ -89,7 +116,6 @@ public class StructLayoutTest {
 
         @StructField(order = 2, dataType = DataType.INT32_BE)
         private int int32BeValue;
-
 
         @StructField(order = 3, dataType = DataType.FLOAT32_LE)
         private float floatValue;
@@ -103,8 +129,8 @@ public class StructLayoutTest {
         @SequenceField(order = 6, elementType = DataType.FLOAT64_BE)
         private List<Double> doubleList;
 
-//        @StructObjectField(order = 4)
-//        private CustomObject customObject;
+        @StructObjectField(order = 7)
+        private CustomObject customObject;
     }
 
     @Getter

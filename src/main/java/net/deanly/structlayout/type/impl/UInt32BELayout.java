@@ -2,7 +2,7 @@ package net.deanly.structlayout.type.impl;
 
 import net.deanly.structlayout.Layout;
 
-public class UInt32BELayout extends Layout<Integer> {
+public class UInt32BELayout extends Layout<Long> {
 
     public UInt32BELayout(String property) {
         super(4, property);
@@ -17,10 +17,10 @@ public class UInt32BELayout extends Layout<Integer> {
      *
      * @param data   The byte array containing the data.
      * @param offset The offset where decoding starts.
-     * @return The decoded unsigned 32-bit integer as an Integer.
+     * @return The decoded unsigned 32-bit integer as a Long.
      */
     @Override
-    public Integer decode(byte[] data, int offset) {
+    public Long decode(byte[] data, int offset) {
         if (data == null) {
             throw new IllegalArgumentException("Data cannot be null.");
         }
@@ -38,17 +38,17 @@ public class UInt32BELayout extends Layout<Integer> {
             throw new IllegalArgumentException("Decoded value exceeds allowed range for UInt32.");
         }
 
-        return (int) result;
+        return result;
     }
 
     /**
      * Encodes an unsigned 32-bit integer into a byte array in big-endian format.
      *
-     * @param value The unsigned 32-bit integer to encode.
+     * @param value The unsigned 32-bit integer as Long to encode.
      * @return The encoded byte array.
      */
     @Override
-    public byte[] encode(Integer value) {
+    public byte[] encode(Long value) {
         if (value == null || value < 0) {
             throw new IllegalArgumentException("Cannot encode negative values for UInt32.");
         }

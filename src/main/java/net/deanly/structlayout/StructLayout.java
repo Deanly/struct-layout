@@ -1,5 +1,6 @@
 package net.deanly.structlayout;
 
+import net.deanly.structlayout.analysis.HexDumpUtil;
 import net.deanly.structlayout.codec.StructEncoder;
 import net.deanly.structlayout.codec.StructDecoder;
 
@@ -26,5 +27,40 @@ public class StructLayout {
      */
     public static <T> T decode(byte[] data, Class<T> type) {
         return StructDecoder.decode(type, data, 0);
+    }
+
+    /**
+     * Debugs the given byte array by outputting it in a hex dump format.
+     *
+     * @param data The byte array to debug.
+     */
+    public static void debug(byte[] data) {
+        if (data == null || data.length == 0) {
+            System.out.println("[Empty byte array]");
+            return;
+        }
+        String hexDump = HexDumpUtil.toHexDump(data);
+        System.out.println(hexDump);
+    }
+
+    /**
+     * Debugs an object by encoding it into a byte array using StructLayout.encode
+     * and displaying it in a hex dump format.
+     *
+     * @param obj The Object to debug.
+     */
+    public static void debug(Object obj) {
+        if (obj == null) {
+            System.out.println("[Object is null]");
+            return;
+        }
+        try {
+            // Object를 encode하여 byte[]로 변환
+            byte[] encoded = StructEncoder.encode(obj);
+            // 변환한 byte[]를 debug(byte[])로 전달
+            debug(encoded);
+        } catch (Exception e) {
+            System.err.println("[Error encoding object: " + e.getMessage() + "]");
+        }
     }
 }

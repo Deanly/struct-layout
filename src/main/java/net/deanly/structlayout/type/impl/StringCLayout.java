@@ -9,17 +9,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 @Slf4j
-public class CStringLayout extends Layout<String> {
+public class StringCLayout extends Layout<String> {
 
     private final Charset charset; // 문자열 인코딩 방식
 
     // 기본 ASCII 기반의 C 문자열 처리
-    public CStringLayout() {
+    public StringCLayout() {
         this(StandardCharsets.US_ASCII);
     }
 
     // 특정 인코딩을 사용하는 C 문자열 처리
-    public CStringLayout(Charset charset) {
+    public StringCLayout(Charset charset) {
         super(-1); // 문자열 길이를 결정할 수 없으므로 Span은 동적으로 처리.
         this.charset = charset;
     }
@@ -104,9 +104,11 @@ public class CStringLayout extends Layout<String> {
     @Override
     public void printDebug(byte[] data, int offset, Field field) {
         if (isTestEnvironment()) {
-            log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: \"{}\"",
-                    field.getDeclaringClass().getSimpleName(), field.getName(),
-                    bytesToHex(data, offset), getSpan(data, offset), decode(data, offset));
+            if (offset > 0 && offset + getSpan() <= data.length) {
+                log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: \"{}\"",
+                        field.getDeclaringClass().getSimpleName(), field.getName(),
+                        bytesToHex(data, offset), getSpan(data, offset), decode(data, offset));
+            }
         }
     }
 }

@@ -20,6 +20,14 @@ public class Int32LELayout extends Layout<Integer> {
         if (data == null) {
             throw new IllegalArgumentException("Data cannot be null.");
         }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset cannot be negative. Given offset: " + offset);
+        }
+        if (data.length - offset < getSpan()) {
+            throw new IllegalArgumentException(
+                    "Data length is insufficient for decoding. Required: " + getSpan() + " bytes, but available: " + (data.length - offset) + " bytes from offset " + offset
+            );
+        }
 
         int result = 0;
         for (int i = 0; i < getSpan(); i++) {

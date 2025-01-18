@@ -1,11 +1,14 @@
 package net.deanly.structlayout.codec;
 
+import net.deanly.structlayout.annotation.CustomLayoutField;
 import net.deanly.structlayout.annotation.SequenceField;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.analysis.DataTypeMapping;
 import net.deanly.structlayout.Layout;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.exception.FieldAccessException;
+import net.deanly.structlayout.exception.InvalidSequenceTypeException;
+import net.deanly.structlayout.exception.StructParsingException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,9 +18,11 @@ import java.util.List;
 public class StructEncoder {
 
     public static <T> byte[] encode(T instance) {
-        List<byte[]> fieldChunks = new ArrayList<>();
+        if (instance == null) {
+            return new byte[0]; // Null 객체는 빈 바이트 배열로 처리
+        }
 
-        // 필드를 "order" 기준으로 정렬
+        List<byte[]> fieldChunks = new ArrayList<>();
         Field[] fields = instance.getClass().getDeclaredFields();
         List<Field> orderedFields = getOrderedFields(fields);
 
@@ -34,13 +39,21 @@ public class StructEncoder {
                     SequenceField sequenceField = field.getAnnotation(SequenceField.class);
                     byte[] chunk = encodeSequenceField(instance, field, sequenceField);
                     fieldChunks.add(chunk);
+                } else if (field.isAnnotationPresent(StructObjectField.class)) {
+                    StructObjectField structObjectField = field.getAnnotation(StructObjectField.class);
+                    byte[] chunk = encodeStructObjectField(instance, field, structObjectField);
+                    fieldChunks.add(chunk);
+                } else if (field.isAnnotationPresent(CustomLayoutField.class)) {
+                    CustomLayoutField customLayoutField = field.getAnnotation(CustomLayoutField.class);
+                    byte[] chunk = encodeCustomLayoutField(instance, field, customLayoutField);
+                    fieldChunks.add(chunk);
                 }
             } catch (IllegalAccessException e) {
-                throw new RuntimeException("Failed to access field [" + field.getName() + "] for encoding.", e);
+                throw new FieldAccessException(field.getName(), instance.getClass().getName(), e);
             }
         }
 
-        // Merge all chunks into a single byte array
+        // Merge all byte chunks into one
         return mergeChunks(fieldChunks);
     }
 
@@ -54,7 +67,8 @@ public class StructEncoder {
             // 지원되는 어노테이션 확인
             if (field.isAnnotationPresent(StructField.class) ||
                     field.isAnnotationPresent(SequenceField.class) ||
-                    field.isAnnotationPresent(StructObjectField.class)) {
+                    field.isAnnotationPresent(StructObjectField.class) ||
+                    field.isAnnotationPresent(CustomLayoutField.class)) {
                 orderedFields.add(field);
             }
         }
@@ -75,11 +89,12 @@ public class StructEncoder {
             return field.getAnnotation(SequenceField.class).order();
         } else if (field.isAnnotationPresent(StructObjectField.class)) {
             return field.getAnnotation(StructObjectField.class).order();
+        } else if (field.isAnnotationPresent(CustomLayoutField.class)) {
+            return field.getAnnotation(CustomLayoutField.class).order();
         }
         throw new IllegalArgumentException("Field [" + field.getName() + "] does not have any supported order field.");
     }
 
-    @SuppressWarnings("unchecked")
     private static <T> byte[] encodeStructField(T instance, Field field, StructField annotation) throws IllegalAccessException {
         Object value = field.get(instance);
 
@@ -94,43 +109,92 @@ public class StructEncoder {
     @SuppressWarnings("unchecked")
     private static <T> byte[] encodeSequenceField(T instance, Field field, SequenceField annotation) throws IllegalAccessException {
         Object sequence = field.get(instance);
-
-        // 값이 null인 경우
         if (sequence == null) {
             return new byte[]{0};
         }
 
         int length;
         List<T> elements;
-        if (sequence instanceof List<?>) {
-            elements = (List<T>) sequence;
-            length = elements.size();
-        } else if (sequence.getClass().isArray()) {
-            length = java.lang.reflect.Array.getLength(sequence);
-            elements = new ArrayList<>();
-            for (int i = 0; i < length; i++) {
-                elements.add((T) java.lang.reflect.Array.get(sequence, i));
+
+        try {
+            if (sequence instanceof List<?>) {
+                elements = (List<T>) sequence;
+                length = elements.size();
+            } else if (sequence.getClass().isArray()) {
+                length = java.lang.reflect.Array.getLength(sequence);
+                elements = new ArrayList<>();
+                for (int i = 0; i < length; i++) {
+                    elements.add((T) java.lang.reflect.Array.get(sequence, i));
+                }
+            } else {
+                throw new InvalidSequenceTypeException(field.getName(), sequence.getClass());
             }
-        } else {
-            throw new IllegalArgumentException("Unsupported sequence type: " + sequence.getClass());
+        } catch (Exception e) {
+            throw new StructParsingException("Error while processing sequence field '" + field.getName() + "'.", e);
         }
 
-        // 길이와 요소 직렬화
+        // 직렬화
         Layout<Object> lengthLayout = DataTypeMapping.getLayout(annotation.lengthType());
         Layout<Object> elementLayout = DataTypeMapping.getLayout(annotation.elementType());
 
-        byte[] lengthHeader = lengthLayout.encode(length); // 길이 헤더 직렬화
+        // 타입 변환 추가
+        Class<?> expectedLengthType = annotation.lengthType().getFieldType(); // 예상되는 타입을 조회 (Layout과 연동)
+        Object lengthValue = convertValueToExpectedType(length, expectedLengthType, field.getName());
+
+        // Encode length
+        byte[] lengthHeader = lengthLayout.encode(lengthValue); // 변환된 값 사용
         lengthLayout.printDebug(lengthHeader, 0, field);
 
+        // Encode elements
         List<byte[]> elementChunks = new ArrayList<>();
         for (Object element : elements) {
             byte[] elementBytes = elementLayout.encode(element);
-            elementLayout.printDebug(elementBytes, 0, field);
             elementChunks.add(elementBytes);
         }
 
-        // Header + Body 병합
         return mergeChunks(lengthHeader, mergeChunks(elementChunks));
+    }
+
+    private static Object convertValueToExpectedType(Object value, Class<?> expectedType, String fieldName) {
+        if (expectedType == null) {
+            throw new IllegalArgumentException("Expected type cannot be null for field: " + fieldName);
+        }
+
+        // 이미 예상 타입과 일치하는 경우 그대로 반환
+        if (expectedType.isInstance(value)) {
+            return value;
+        }
+
+        // int → Long 변환
+        if (value instanceof Integer && expectedType == Long.class) {
+            return ((Integer) value).longValue();
+        }
+
+        // int/long → BigInteger 변환
+        if ((value instanceof Integer || value instanceof Long) && expectedType == java.math.BigInteger.class) {
+            return java.math.BigInteger.valueOf(((Number) value).longValue());
+        }
+
+        // 다른 타입 변환을 처리하지 못한 경우
+        throw new IllegalArgumentException(
+                String.format("Field '%s' cannot be converted from %s to %s.", fieldName, value.getClass().getName(), expectedType.getName())
+        );
+    }
+
+    private static <T> byte[] encodeStructObjectField(T instance, Field field, StructObjectField annotation) throws IllegalAccessException {
+        Object value = field.get(instance);
+        return StructEncoder.encode(value);
+    }
+
+    private static <T> byte[] encodeCustomLayoutField(T instance, Field field, CustomLayoutField annotation) throws IllegalAccessException {
+        Object value = field.get(instance);
+        Class<? extends Layout<?>> layoutClazz = annotation.layout();
+        Layout<Object> layout = DataTypeMapping.getLayout(layoutClazz);
+
+        byte[] bytes = layout.encode(value);
+        layout.printDebug(bytes, 0, field);
+
+        return bytes;
     }
 
     private static byte[] mergeChunks(List<byte[]> chunks) {
