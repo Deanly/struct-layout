@@ -5,10 +5,8 @@ import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.SequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.type.DataType;
-import net.deanly.structlayout.type.Endianness;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -51,7 +49,7 @@ public class StructAnalyzer {
         DataType dataType = structField.dataType();
 
         // Use layout mapping to determine size.
-        Layout<?> layout = DataTypeMapping.getLayout(dataType);
+        Layout<?> layout = CachedLayoutProvider.getLayout(dataType);
         return layout.getSpan();
     }
 
@@ -68,13 +66,13 @@ public class StructAnalyzer {
 
         DataType lengthType = sequenceField.lengthType();
         if (lengthType != null) {
-            Layout<?> lengthLayout = DataTypeMapping.getLayout(lengthType);
+            Layout<?> lengthLayout = CachedLayoutProvider.getLayout(lengthType);
             totalSize += lengthLayout.getSpan();
         }
 
         // Elements' Span multiplied by collection size
         DataType elementType = sequenceField.elementType();
-        Layout<?> elementLayout = DataTypeMapping.getLayout(elementType);
+        Layout<?> elementLayout = CachedLayoutProvider.getLayout(elementType);
 
         totalSize += elementLayout.getSpan() * collection.size();
         return totalSize;

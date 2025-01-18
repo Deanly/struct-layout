@@ -2,7 +2,7 @@ package net.deanly.structlayout.type;
 
 import lombok.Getter;
 import net.deanly.structlayout.Layout;
-import net.deanly.structlayout.type.impl.*;
+import net.deanly.structlayout.type.basic.*;
 
 /**
  * Defines the supported data types for annotation and layout.
@@ -11,7 +11,7 @@ import net.deanly.structlayout.type.impl.*;
 public enum DataType {
     // 정수 타입 (Integer Types)
     INT8(Int8Layout.class, Byte.class),    // Signed 8-bit integer
-    UInt8(UInt8Layout.class, Short.class),  // Unsigned 8-bit integer (represented as short in Java)
+    UINT8(UInt8Layout.class, Short.class),  // Unsigned 8-bit integer (represented as short in Java)
     INT16_LE(Int16LELayout.class, Short.class),
     INT16_BE(Int16BELayout.class, Short.class),
     UINT16_LE(UInt16LELayout.class, Integer.class), // Unsigned 16-bit integer
