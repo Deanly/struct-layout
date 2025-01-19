@@ -1,8 +1,9 @@
-package net.deanly.structlayout.codec;
+package net.deanly.structlayout.codec.decode;
 
 import net.deanly.structlayout.Layout;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.exception.InvalidDataOffsetException;
+import net.deanly.structlayout.exception.StructParsingException;
 import net.deanly.structlayout.type.DataType;
 import org.junit.jupiter.api.Test;
 
@@ -150,7 +151,7 @@ class StructDecoderTest {
     void testDecodeInvalidCustomLayout() {
         byte[] encodedData = new byte[] { 0x00, 0x00, 0x00, 0x64 }; // Some encoded data
 
-        assertThrows(UnsupportedOperationException.class,
+        assertThrows(StructParsingException.class,
                 () -> StructDecoder.decode(InvalidCustomLayoutObject.class, encodedData, 0),
                 "Decoding with a broken custom layout should throw UnsupportedOperationException");
     }

@@ -1,8 +1,8 @@
 package net.deanly.structlayout;
 
 import net.deanly.structlayout.analysis.HexDumpUtil;
-import net.deanly.structlayout.codec.StructEncoder;
-import net.deanly.structlayout.codec.StructDecoder;
+import net.deanly.structlayout.codec.encode.StructEncoder;
+import net.deanly.structlayout.codec.decode.StructDecoder;
 
 public class StructLayout {
 

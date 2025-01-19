@@ -6,25 +6,49 @@ import net.deanly.structlayout.Layout;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a parent layout that can contain multiple child layouts.
+ * This class extends the Layout class and provides additional functionality
+ * for managing and processing child layouts. It serves as a container for
+ * layouts that can work together, while allowing child layouts to implement
+ * their specific encoding and decoding logic.
+ *
+ * @param <T> The type of the value handled by this ParentLayout.
+ */
 @Getter
 public abstract class ParentLayout<T> extends Layout<T> {
     private final List<Layout<?>> childLayouts = new ArrayList<>(); // 하위 레이아웃들
 
+    /**
+     * Constructs a ParentLayout with a specified span and property.
+     *
+     * @param span The number of bytes that this layout will process. This value
+     *             is critical as it defines the number of bytes processed during
+     *             encoding/decoding and validation offsets.
+     * @param property An optional property name associated with the layout, which
+     *                 can be used for debugging or mapping.
+     */
     public ParentLayout(int span, String property) {
         super(span, property);
     }
 
     /**
-     * Add a child layout to this parent.
+     * Adds a child layout to the parent layout's collection of child layouts.
      *
-     * @param layout The child layout to be added.
+     * @param layout The child layout to be added. This layout is an instance
+     *               of the generic Layout class and may define its specific
+     *               encoding and decoding logic.
      */
     public void addChild(Layout<?> layout) {
         childLayouts.add(layout);
     }
 
     /**
-     * Extendable method to process or retrieve data for child layouts.
+     * Retrieves the data associated with a specific child layout within a parent layout.
+     *
+     * @param child The child layout for which the data needs to be retrieved.
+     *              This layout must be a part of the parent layout's collection of child layouts.
+     * @return A byte array representing the data associated with the specified child layout.
      */
     public abstract byte[] getDataForChild(Layout<?> child);
 }

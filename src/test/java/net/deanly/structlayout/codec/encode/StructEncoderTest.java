@@ -1,4 +1,4 @@
-package net.deanly.structlayout.codec;
+package net.deanly.structlayout.codec.encode;
 
 import net.deanly.structlayout.Layout;
 import net.deanly.structlayout.analysis.CachedLayoutProvider;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StructEncoderTest {
 
-    private static class SampleObject {
+    public static class SampleObject {
         @StructField(order = 1, dataType = DataType.INT32_BE)
         public int field1 = 123;
 
@@ -28,12 +28,12 @@ class StructEncoderTest {
         public long customField = 987654321L;
     }
 
-    private static class NestedObject {
+    public static class NestedObject {
         @StructField(order = 1, dataType = DataType.INT16_BE)
         public short field = 42;
     }
 
-    private static class MyCustomLayout extends Layout<Long> {
+    public static class MyCustomLayout extends Layout<Long> {
         public MyCustomLayout() {
             super(8);
         }
@@ -127,8 +127,8 @@ class StructEncoderTest {
     @Test
     void testInvalidCustomLayoutField() {
         InvalidCustomLayout obj = new InvalidCustomLayout();
-        assertThrows(UnsupportedOperationException.class, () -> StructEncoder.encode(obj),
-                "Broken custom layout should throw UnsupportedOperationException");
+        assertThrows(StructParsingException.class, () -> StructEncoder.encode(obj),
+                "Broken custom layout should throw StructParsingException");
     }
 
     @Test

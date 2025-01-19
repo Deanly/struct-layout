@@ -165,8 +165,7 @@ class Float32BELayoutTest {
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x01}, encodedMin);
 
         // 3. Positive Infinity
-        byte[] encodedPositiveInfinity = layout.encode(Float.POSITIVE_INFINITY);
-        assertArrayEquals(new byte[]{0x7F, (byte) 0x80, 0x00, 0x00}, encodedPositiveInfinity);
+        assertThrows(IllegalArgumentException.class, () -> layout.encode(Float.POSITIVE_INFINITY));
 
         // 4. NaN
         byte[] encodedNaN = layout.encode(Float.NaN);

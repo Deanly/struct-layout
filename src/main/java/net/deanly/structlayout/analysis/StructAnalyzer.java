@@ -11,6 +11,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 
+/**
+ * The StructAnalyzer class provides utilities to compute the total size of an
+ * object based on its annotated fields. It processes fields annotated with
+ * specific annotations, including {@code StructField}, {@code SequenceField},
+ * and {@code StructObjectField}, to calculate the byte layout of an object
+ * for structured serialization or other purposes.
+ */
 public class StructAnalyzer {
 
     /**

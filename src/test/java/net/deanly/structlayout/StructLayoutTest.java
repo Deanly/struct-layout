@@ -6,7 +6,6 @@ import net.deanly.structlayout.annotation.SequenceField;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.type.DataType;
-import net.deanly.structlayout.type.Endianness;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -16,6 +15,68 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class StructLayoutTest {
+
+    public static class SimpleStruct {
+        @StructField(order = 1, dataType = DataType.INT16_LE)
+        private int intValue;
+
+        @StructField(order = 2, dataType = DataType.FLOAT32_LE)
+        private float floatValue;
+
+        @SequenceField(order = 3, elementType = DataType.BYTE)
+        private byte[] byteArray;
+
+        public int getIntValue() {
+            return intValue;
+        }
+
+        public void setIntValue(int intValue) {
+            this.intValue = intValue;
+        }
+
+        public float getFloatValue() {
+            return floatValue;
+        }
+
+        public void setFloatValue(float floatValue) {
+            this.floatValue = floatValue;
+        }
+
+        public byte[] getByteArray() {
+            return byteArray;
+        }
+
+        public void setByteArray(byte[] byteArray) {
+            this.byteArray = byteArray;
+        }
+    }
+
+    @Test
+    public void test() {
+        // Create and populate the struct
+        SimpleStruct struct = new SimpleStruct();
+        struct.setIntValue(42);
+        struct.setFloatValue(3.14f);
+        struct.setByteArray(new byte[] { 1, 2, 3 });
+
+        // Encode to byte array
+        byte[] serializedData = StructLayout.encode(struct);
+
+        // Decode from byte array
+        SimpleStruct decodedStruct = StructLayout.decode(serializedData, SimpleStruct.class);
+
+        // Debug the byte array
+        StructLayout.debug(serializedData);
+
+        // Output the decoded struct
+        System.out.println("Decoded Struct:");
+        System.out.println("Int Value: " + decodedStruct.getIntValue());
+        System.out.println("Float Value: " + decodedStruct.getFloatValue());
+
+        // Debugging a byte array
+        StructLayout.debug(serializedData);
+        // 00000000: 2a 00 00 00 c3 f5 48 40 03 00 00 00 01 02 03      *.....H@.......
+    }
 
     @Test
     public void testAllDataTypesWithStructObject() {
@@ -52,6 +113,7 @@ public class StructLayoutTest {
         AllDataTypesStruct original = new AllDataTypesStruct();
         original.setInt32Value(42); // Little-Endian
         original.setInt32BeValue(42); // Big-Endian
+//        original.setStringValue("Hello, StructObject!");
 
         // Serialize object
         byte[] serializedData = StructLayout.encode(original);

@@ -46,10 +46,17 @@ public class CachedLayoutProvider {
     }
 
     /**
-     * 주어진 DataType에 맞는 Layout을 가져옵니다.
+     * Retrieves a Layout instance corresponding to the specified DataType. If the layout
+     * instance is not already cached, it will attempt to create a new instance using the
+     * layout class provided by the DataType.
      *
-     * @param dataType DataType (엔디안을 포함한 데이터 타입)
-     * @return Layout<T> 인스턴스
+     * @param <T> The type of the value being processed by the Layout.
+     * @param dataType The DataType for which the Layout needs to be retrieved.
+     *                 Must not be null and must provide a valid layout definition.
+     * @return A Layout instance associated with the specified DataType.
+     *         Never null unless an unexpected error occurs.
+     * @throws LayoutInitializationException If the Layout cannot be instantiated or
+     *                                       there is an error during initialization.
      */
     @SuppressWarnings("unchecked")
     public static <T> Layout<T> getLayout(DataType dataType) {

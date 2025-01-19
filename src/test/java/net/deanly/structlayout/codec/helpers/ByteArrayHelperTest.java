@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ByteArrayHelperTest {
 
@@ -50,5 +51,50 @@ class ByteArrayHelperTest {
 
         // 빈 배열 확인
         assertArrayEquals(new byte[]{}, merged);
+    }
+
+
+    @Test
+    public void testExtractSubArray_validInput() {
+        byte[] data = {0, 1, 2, 3, 4, 5};
+        byte[] result = ByteArrayHelper.extractSubArray(data, 2, 3);
+        assertArrayEquals(new byte[]{2, 3, 4}, result);
+    }
+
+    @Test
+    public void testExtractSubArray_fullArray() {
+        byte[] data = {0, 1, 2, 3, 4, 5};
+        byte[] result = ByteArrayHelper.extractSubArray(data, 0, data.length);
+        assertArrayEquals(data, result);
+    }
+
+    @Test
+    public void testExtractSubArray_emptySubArray() {
+        byte[] data = {0, 1, 2, 3, 4, 5};
+        byte[] result = ByteArrayHelper.extractSubArray(data, 3, 0);
+        assertArrayEquals(new byte[]{}, result);
+    }
+
+    @Test
+    public void testExtractSubArray_invalidOffset() {
+        byte[] data = {0, 1, 2, 3, 4, 5};
+        assertThrows(IllegalArgumentException.class, () ->
+                ByteArrayHelper.extractSubArray(data, -1, 3)
+        );
+    }
+
+    @Test
+    public void testExtractSubArray_invalidLength() {
+        byte[] data = {0, 1, 2, 3, 4, 5};
+        assertThrows(IllegalArgumentException.class, () ->
+                ByteArrayHelper.extractSubArray(data, 2, 10)
+        );
+    }
+
+    @Test
+    public void testExtractSubArray_nullArray() {
+        assertThrows(IllegalArgumentException.class, () ->
+                ByteArrayHelper.extractSubArray(null, 0, 3)
+        );
     }
 }

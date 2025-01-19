@@ -50,6 +50,12 @@ public class Float32LELayout extends Layout<Float> {
         if (value == null) {
             throw new IllegalArgumentException("Value cannot be null.");
         }
+        if (value > Float.MAX_VALUE || value < -Float.MAX_VALUE) {
+            throw new IllegalArgumentException(
+                    String.format("Value %s exceeds the range of Float32 (Valid range: [%s, %s])",
+                            value, -Float.MAX_VALUE, Float.MAX_VALUE)
+            );
+        }
 
         byte[] data = new byte[4];
 
