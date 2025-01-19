@@ -1,9 +1,11 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 group = 'net.deanly'
-version = '0.0.1'
+version = '0.1.0'
 
 java {
     toolchain {
@@ -19,7 +21,6 @@ repositories {
 
 dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.16'
-//    runtimeOnly 'org.slf4j:slf4j-nop:2.0.16'
     testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.12'
 
     compileOnly 'org.projectlombok:lombok:1.18.36'
@@ -35,4 +36,53 @@ dependencies {
 
 tasks.withType(Test) {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name.set("net.deanly.structlayout")
+                description.set("Java client for Struct Layout")
+                url.set("https://github.com/deanly/struct-layout")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/deanly/struct-layout.git")
+                    developerConnection.set("scm:git:ssh://github.com/deanly/struct-layout.git")
+                    url.set("https://github.com/deanly/struct-layout/tree/main")
+                }
+
+                developers {
+                    developer {
+                        id.set("deanly")
+                        name.set("Dean Lee")
+                        email.set("deanly.dev@gmail.com")
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/deanly/struct-layout")
+            credentials {
+                username = project.findProperty("github.username")
+                password = project.findProperty("github.token")
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign publishing.publications.mavenJava
 }

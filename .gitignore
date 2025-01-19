@@ -7,6 +7,6 @@ build
 .idea
 *.iml
 *.dat
-*.properties
 *.json
 .gradle
+gradle.properties
