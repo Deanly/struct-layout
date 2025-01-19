@@ -1,4 +1,7 @@
 # StructLayout
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Java Version](https://img.shields.io/badge/Java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+[![Java](https://img.shields.io/badge/Pure-Java-orange)](https://www.java.com/)
 
 StructLayout is a Java library designed to simplify working with **binary data** using structured layouts. It allows you to easily encode/decode complex data structures into/from byte arrays by just defining a `Struct` class with simple annotations.
 
