@@ -2,6 +2,7 @@ package net.deanly.structlayout;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.deanly.structlayout.annotation.CustomLayoutField;
 import net.deanly.structlayout.annotation.SequenceField;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructObjectField;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,7 +107,7 @@ public class StructLayoutTest {
         assertArrayEquals(original.getFloatArray(), deserialized.getFloatArray());
         assertEquals(original.getDoubleList(), deserialized.getDoubleList());
         assertEquals(original.getCustomStruct().getId(), deserialized.getCustomStruct().getId());
-        assertEquals(original.getCustomStruct().getName(), deserialized.getCustomStruct().getName());
+        assertEquals(original.getCustomStruct().getKey(), deserialized.getCustomStruct().getKey());
     }
 
     @Test
@@ -166,7 +168,7 @@ public class StructLayoutTest {
         struct.setStringValue("Hello, StructObject!");
         struct.setFloatArray(new float[]{3.14f, 1.59f});
         struct.setDoubleList(List.of(1.23, 4.56));
-        struct.setCustomStruct(new CustomStruct(7L, "NestedStruct"));
+        struct.setCustomStruct(new CustomStruct(7L, "11111111111111111111111111111111"));
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
@@ -196,7 +198,7 @@ public class StructLayoutTest {
         System.out.println();
         System.out.println("Custom Struct:");
         System.out.println("  ID: " + struct.getCustomStruct().getId());
-        System.out.println("  Name: " + struct.getCustomStruct().getName());
+        System.out.println("  Key: " + struct.getCustomStruct().getKey());
 
         // Debug the decoded struct
         System.out.println("Debug Decoded Struct:");
@@ -234,15 +236,32 @@ public class StructLayoutTest {
         @StructField(order = 1, dataType = DataType.INT32_LE)
         private long id;
 
-        @StructField(order = 2, dataType = DataType.STRING_C)
-        private String name;
+        @CustomLayoutField(order = 2, layout = KeyLayout.class)
+        private String key;
 
         public CustomStruct() {
         }
 
-        public CustomStruct(long id, String name) {
+        public CustomStruct(long id, String key) {
             this.id = id;
-            this.name = name;
+            this.key = key;
+        }
+    }
+
+    public static class KeyLayout extends Layout<String> {
+        private static final int KEY_LENGTH = 32; // 32 bytes
+        public KeyLayout() {
+            super(KEY_LENGTH);
+        }
+
+        @Override
+        public byte[] encode(String value) {
+            return value.getBytes(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public String decode(byte[] buffer, int offset) {
+            return new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8);
         }
     }
 }

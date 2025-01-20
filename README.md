@@ -64,10 +64,13 @@ Define a class to represent the structure of your binary data. Use StructLayout 
 ```java
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.SequenceField;
+import net.deanly.structlayout.annotation.StructObjectField;
+import net.deanly.structlayout.annotation.CustomLayoutField;
 import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.Layout;
 
 // Define your Struct class
-public class SimpleStruct {
+class SimpleStruct {
     @StructField(order = 1, dataType = DataType.INT32_LE)
     private int int32Value;
 
@@ -92,22 +95,38 @@ public class SimpleStruct {
     // Getter and Setter...
 }
 
-public static class CustomStruct {
+class CustomStruct {
     @StructField(order = 1, dataType = DataType.INT32_LE)
     private long id; // Although it's INT32_LE in bytes, it is represented as a long type in Java.
 
-    @StructField(order = 2, dataType = DataType.STRING_C)
-    private String name;
+    @CustomLayoutField(order = 2, layout = KeyLayout.class)
+    private String key;
 
     public CustomStruct() {
     }
-
     public CustomStruct(long id, String name) {
         this.id = id;
         this.name = name;
     }
     
     // Getter and Setter...
+}
+
+class KeyLayout extends Layout<String> {
+  private static final int KEY_LENGTH = 32; // 32 bytes
+  public KeyLayout() {
+    super(KEY_LENGTH);
+  }
+
+  @Override
+  public byte[] encode(String value) {
+    return value.getBytes(StandardCharsets.UTF_8);
+  }
+
+  @Override
+  public String decode(byte[] buffer, int offset) {
+    return new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8);
+  }
 }
 ```
 
@@ -130,13 +149,13 @@ public class StructExample {
         struct.setStringValue("Hello, StructObject!");
         struct.setFloatArray(new float[]{3.14f, 1.59f});
         struct.setDoubleList(List.of(1.23, 4.56));
-        struct.setCustomStruct(new CustomStruct(7L, "NestedStruct"));
+        struct.setCustomStruct(new CustomStruct(7L, "11111111111111111111111111111111"));
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
 
         // Decode from byte array
-        AllDataTypesStruct decodedStruct = StructLayout.decode(serializedData, AllDataTypesStruct.class);
+        SimpleStruct decodedStruct = StructLayout.decode(serializedData, SimpleStruct.class);
 
         // Debug the byte array
         System.out.println("Debug Serialized Data:");
@@ -160,7 +179,7 @@ public class StructExample {
         System.out.println();
         System.out.println("Custom Struct:");
         System.out.println("  ID: " + struct.getCustomStruct().getId());
-        System.out.println("  Name: " + struct.getCustomStruct().getName());
+        System.out.println("  Key: " + struct.getCustomStruct().getKey());
 
         // Debug the decoded struct
         System.out.println("Debug Decoded Struct:");
@@ -176,8 +195,9 @@ Debug Serialized Data:
 00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
 00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 00 00   .......H@...?...
 00000030: 00 3f f3 ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a   .?...z.G.@.=p...
-00000040: 3d 07 00 00 00 4e 65 73 74 65 64 53 74 72 75 63   =....NestedStruc
-00000050: 74 00                                             t.
+00000040: 3d 07 00 00 00 31 31 31 31 31 31 31 31 31 31 31   =....11111111111
+00000050: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
+00000060: 31 31 31 31 31                                    11111
 
 Decoded Struct:
 Int32 Value (Little-Endian): 42
@@ -188,15 +208,16 @@ Float Array: 3.14 1.59
 Double List: 1.23 4.56 
 Custom Struct:
   ID: 7
-  Name: NestedStruct
-
+  Key: 11111111111111111111111111111111
+  
 Debug Decoded Struct:
 00000000: 2a 00 00 00 00 00 00 2a 66 e6 f6 42 48 65 6c 6c   *......*f..BHell
 00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
 00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 00 00   .......H@...?...
 00000030: 00 3f f3 ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a   .?...z.G.@.=p...
-00000040: 3d 07 00 00 00 4e 65 73 74 65 64 53 74 72 75 63   =....NestedStruc
-00000050: 74 00                                             t.
+00000040: 3d 07 00 00 00 31 31 31 31 31 31 31 31 31 31 31   =....11111111111
+00000050: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
+00000060: 31 31 31 31 31                                    11111
 ```
 ---
 
