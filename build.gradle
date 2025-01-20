@@ -1,11 +1,12 @@
 plugins {
     id 'java'
-    id 'maven-publish'
     id 'signing'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.16.0'
 }
 
 group = 'net.deanly'
-version = '0.1.0'
+version = '0.1.1'
 
 java {
     toolchain {
@@ -40,32 +41,30 @@ tasks.withType(Test) {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
             from components.java
 
             pom {
-                name.set("net.deanly.structlayout")
-                description.set("Java client for Struct Layout")
-                url.set("https://github.com/deanly/struct-layout")
-
+                name.set('StructLayout')
+                description.set('A Java library for structured binary data handling')
+                url.set('https://github.com/deanly/struct-layout')
+                inceptionYear.set('2025')
                 licenses {
                     license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
+                        name.set('MIT License')
+                        url.set('https://opensource.org/licenses/MIT')
                     }
                 }
-
                 scm {
-                    connection.set("scm:git:git://github.com/deanly/struct-layout.git")
-                    developerConnection.set("scm:git:ssh://github.com/deanly/struct-layout.git")
-                    url.set("https://github.com/deanly/struct-layout/tree/main")
+                    connection.set('scm:git:https://github.com/deanly/struct-layout.git')
+                    developerConnection.set('scm:git:ssh://github.com/deanly/struct-layout.git')
+                    url.set('https://github.com/deanly/struct-layout')
                 }
-
                 developers {
                     developer {
-                        id.set("deanly")
-                        name.set("Dean Lee")
-                        email.set("deanly.dev@gmail.com")
+                        id.set('deanly')
+                        name.set('Dean Lee')
+                        email.set('deanly.dev@gmail.com')
                     }
                 }
             }
@@ -73,16 +72,30 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("https://maven.pkg.github.com/deanly/struct-layout")
-            credentials {
-                username = project.findProperty("github.username")
-                password = project.findProperty("github.token")
-            }
+            url = layout.buildDirectory.dir('staging-deploy')
         }
     }
 }
+//
+//signing {
+//    useGpgCmd()
+//    sign publishing.publications.mavenJava
+//}
 
-signing {
-    useGpgCmd()
-    sign publishing.publications.mavenJava
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('build/staging-deploy')
+                }
+            }
+        }
+    }
 }
