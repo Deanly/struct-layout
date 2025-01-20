@@ -89,7 +89,7 @@ public class StructLayoutTest {
         original.setStringValue("Hello, StructObject!");
         original.setFloatArray(new float[]{3.14f, 1.59f});
         original.setDoubleList(List.of(1.23, 4.56));
-        original.setCustomObject(new CustomObject(7, "NestedStruct"));
+        original.setCustomStruct(new CustomStruct(7, "NestedStruct"));
 
         // Encode the object
         byte[] serializedData = StructLayout.encode(original);
@@ -104,8 +104,8 @@ public class StructLayoutTest {
         assertEquals(original.getStringValue(), deserialized.getStringValue());
         assertArrayEquals(original.getFloatArray(), deserialized.getFloatArray());
         assertEquals(original.getDoubleList(), deserialized.getDoubleList());
-        assertEquals(original.getCustomObject().getId(), deserialized.getCustomObject().getId());
-        assertEquals(original.getCustomObject().getName(), deserialized.getCustomObject().getName());
+        assertEquals(original.getCustomStruct().getId(), deserialized.getCustomStruct().getId());
+        assertEquals(original.getCustomStruct().getName(), deserialized.getCustomStruct().getName());
     }
 
     @Test
@@ -158,6 +158,7 @@ public class StructLayoutTest {
 
     @Test
     public void debugPrintingTest2() {
+        // Create and populate the struct
         AllDataTypesStruct struct = new AllDataTypesStruct();
         struct.setInt32Value(42);
         struct.setInt32BeValue(42);
@@ -165,9 +166,41 @@ public class StructLayoutTest {
         struct.setStringValue("Hello, StructObject!");
         struct.setFloatArray(new float[]{3.14f, 1.59f});
         struct.setDoubleList(List.of(1.23, 4.56));
-        struct.setCustomObject(new CustomObject(7, "NestedStruct"));
+        struct.setCustomStruct(new CustomStruct(7L, "NestedStruct"));
 
-        StructLayout.debug(struct);
+        // Encode to byte array
+        byte[] serializedData = StructLayout.encode(struct);
+
+        // Decode from byte array
+        AllDataTypesStruct decodedStruct = StructLayout.decode(serializedData, AllDataTypesStruct.class);
+
+        // Debug the byte array
+        System.out.println("Debug Serialized Data:");
+        StructLayout.debug(serializedData);
+
+        // Output the decoded struct
+        System.out.println("Decoded Struct:");
+        System.out.println("Int32 Value (Little-Endian): " + struct.getInt32Value());
+        System.out.println("Int32 Value (Big-Endian): " + struct.getInt32BeValue());
+        System.out.println("Float Value: " + struct.getFloatValue());
+        System.out.println("String Value: " + struct.getStringValue());
+        System.out.print("Float Array: ");
+        for (float f : struct.getFloatArray()) {
+            System.out.print(f + " ");
+        }
+        System.out.println();
+        System.out.print("Double List: ");
+        for (double d : struct.getDoubleList()) {
+            System.out.print(d + " ");
+        }
+        System.out.println();
+        System.out.println("Custom Struct:");
+        System.out.println("  ID: " + struct.getCustomStruct().getId());
+        System.out.println("  Name: " + struct.getCustomStruct().getName());
+
+        // Debug the decoded struct
+        System.out.println("Debug Decoded Struct:");
+        StructLayout.debug(decodedStruct);
     }
 
     @Getter
@@ -192,22 +225,22 @@ public class StructLayoutTest {
         private List<Double> doubleList;
 
         @StructObjectField(order = 7)
-        private CustomObject customObject;
+        private CustomStruct customStruct;
     }
 
     @Getter
     @Setter
-    public static class CustomObject {
+    public static class CustomStruct {
         @StructField(order = 1, dataType = DataType.INT32_LE)
-        private int id;
+        private long id;
 
         @StructField(order = 2, dataType = DataType.STRING_C)
         private String name;
 
-        public CustomObject() {
+        public CustomStruct() {
         }
 
-        public CustomObject(int id, String name) {
+        public CustomStruct(long id, String name) {
             this.id = id;
             this.name = name;
         }

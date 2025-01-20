@@ -38,6 +38,11 @@ dependencies {
 tasks.withType(Test) {
     useJUnitPlatform()
 }
+tasks.named("build") {
+    doFirst {
+        file("$buildDir/jreleaser").mkdirs()
+    }
+}
 
 publishing {
     publications {
@@ -97,5 +102,9 @@ jreleaser {
                 }
             }
         }
+    }
+    gitRootSearch = true
+    project {
+        license.set("MIT")
     }
 }

@@ -2,6 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java Version](https://img.shields.io/badge/Java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Java](https://img.shields.io/badge/Pure-Java-orange)](https://www.java.com/)
+[![Maven Central](https://img.shields.io/maven-central/v/net.deanly/struct-layout.svg)](https://central.sonatype.com/artifact/net.deanly/struct-layout)
 
 StructLayout is a Java library designed to simplify working with **binary data** using structured layouts. It allows you to easily encode/decode complex data structures into/from byte arrays by just defining a `Struct` class with simple annotations.
 
@@ -11,44 +12,34 @@ With StructLayout, managing structured binary data—common in file processing, 
 
 ## Features
 
-- **Easy-to-Use Annotations**: Automatically map fields in a class to binary representations via annotations.
-- **Support for Common Data Types**: Handle `uint8`, `int8`, `int32`, `float32`, `string`, and more.
-- **Efficient Encoding/Decoding**: Serialize/deserialize objects to/from byte arrays with minimal effort.
-- **Debugging Support**: Print or inspect byte arrays and their structured data representations in a human-readable way.
+- **Easy-to-Use Annotations**:
+  Use annotations like `@StructField` to define the binary structure of your data with minimal boilerplate code.
+- **Support for Common Data Types**:
+  Easily handle primitive data types (`uint8`, `int32`, etc.), strings, arrays, and even nested structures.
+- **Efficient Encoding/Decoding**:
+  Transform objects to binary data and vice versa in just one line of code using `StructLayout.encode()` and `StructLayout.decode()`.
+- **Debugging Support**:
+  Visualize and debug complex binary data with built-in utilities like `StructLayout.debug()`.
 
 ---
 
 ## Installation
 
-To use StructLayout, you need **Java 17** or higher. StructLayout is not yet available on Maven Central, so you’ll need to use our GitHub Maven repository.
+To use StructLayout, you need **Java 17** or higher. StructLayout can be used from Maven Central as shown below.
 
 ### Adding GitHub Maven Repository
 
 To integrate StructLayout into your project, you need to add the following repository to your **Maven** or **Gradle** configuration.
 
 #### For Maven:
-Add the GitHub repository in your `settings.xml` file:
-
-```xml
-<repositories>
-    <repository>
-        <id>github</id>
-        <url>https://maven.pkg.github.com/deanly/struct-layout</url>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
-    </repository>
-</repositories>
-```
-
 And include the dependency in your `pom.xml`:
 
 ```xml
 <dependencies>
     <dependency>
         <groupId>net.deanly</groupId>
-        <artifactId>structlayout</artifactId>
-        <version>1.0.0</version>
+        <artifactId>struct-layout</artifactId>
+        <version>0.1.1</version>
     </dependency>
 </dependencies>
 ```
@@ -57,14 +48,8 @@ And include the dependency in your `pom.xml`:
 Add the GitHub repository to your `build.gradle` file:
 
 ```gradle
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/deanly/struct-layout")
-    }
-}
-
 dependencies {
-    implementation 'net.deanly:structlayout:1.0.0'
+    implementation 'net.deanly:struct-layout:0.1.1'
 }
 ```
 
@@ -84,37 +69,45 @@ import net.deanly.structlayout.type.DataType;
 // Define your Struct class
 public class SimpleStruct {
     @StructField(order = 1, dataType = DataType.INT32_LE)
-    private int intValue;
+    private int int32Value;
 
-    @StructField(order = 2, dataType = DataType.FLOAT32_LE)
+    @StructField(order = 2, dataType = DataType.INT32_BE)
+    private int int32BeValue;
+
+    @StructField(order = 3, dataType = DataType.FLOAT32_LE)
     private float floatValue;
 
-    @SequenceField(order = 3, elementType = DataType.BYTE)
-    private byte[] byteArray;
+    @StructField(order = 4, dataType = DataType.STRING_C)
+    private String stringValue;
 
-    public int getIntValue() {
-        return intValue;
+    @SequenceField(order = 5, elementType = DataType.FLOAT32_LE)
+    private float[] floatArray;
+
+    @SequenceField(order = 6, elementType = DataType.FLOAT64_BE)
+    private List<Double> doubleList;
+
+    @StructObjectField(order = 7)
+    private CustomStruct customStruct;
+
+    // Getter and Setter...
+}
+
+public static class CustomStruct {
+    @StructField(order = 1, dataType = DataType.INT32_LE)
+    private long id; // Although it's INT32_LE in bytes, it is represented as a long type in Java.
+
+    @StructField(order = 2, dataType = DataType.STRING_C)
+    private String name;
+
+    public CustomStruct() {
     }
 
-    public void setIntValue(int intValue) {
-        this.intValue = intValue;
+    public CustomStruct(long id, String name) {
+        this.id = id;
+        this.name = name;
     }
-
-    public float getFloatValue() {
-        return floatValue;
-    }
-
-    public void setFloatValue(float floatValue) {
-        this.floatValue = floatValue;
-    }
-
-    public byte[] getByteArray() {
-        return byteArray;
-    }
-
-    public void setByteArray(byte[] byteArray) {
-        this.byteArray = byteArray;
-    }
+    
+    // Getter and Setter...
 }
 ```
 
@@ -131,82 +124,82 @@ public class StructExample {
     public static void main(String[] args) {
         // Create and populate the struct
         SimpleStruct struct = new SimpleStruct();
-        struct.setIntValue(42);
-        struct.setFloatValue(3.14f);
-        struct.setByteArray(new byte[] { 1, 2, 3 });
+        struct.setInt32Value(42);
+        struct.setInt32BeValue(42);
+        struct.setFloatValue(123.45f);
+        struct.setStringValue("Hello, StructObject!");
+        struct.setFloatArray(new float[]{3.14f, 1.59f});
+        struct.setDoubleList(List.of(1.23, 4.56));
+        struct.setCustomStruct(new CustomStruct(7L, "NestedStruct"));
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
 
         // Decode from byte array
-        SimpleStruct decodedStruct = StructLayout.decode(serializedData, SimpleStruct.class);
+        AllDataTypesStruct decodedStruct = StructLayout.decode(serializedData, AllDataTypesStruct.class);
 
         // Debug the byte array
+        System.out.println("Debug Serialized Data:");
         StructLayout.debug(serializedData);
 
         // Output the decoded struct
         System.out.println("Decoded Struct:");
-        System.out.println("Int Value: " + decodedStruct.getIntValue());
-        System.out.println("Float Value: " + decodedStruct.getFloatValue());
+        System.out.println("Int32 Value (Little-Endian): " + struct.getInt32Value());
+        System.out.println("Int32 Value (Big-Endian): " + struct.getInt32BeValue());
+        System.out.println("Float Value: " + struct.getFloatValue());
+        System.out.println("String Value: " + struct.getStringValue());
+        System.out.print("Float Array: ");
+        for (float f : struct.getFloatArray()) {
+            System.out.print(f + " ");
+        }
+        System.out.println();
+        System.out.print("Double List: ");
+        for (double d : struct.getDoubleList()) {
+            System.out.print(d + " ");
+        }
+        System.out.println();
+        System.out.println("Custom Struct:");
+        System.out.println("  ID: " + struct.getCustomStruct().getId());
+        System.out.println("  Name: " + struct.getCustomStruct().getName());
+
+        // Debug the decoded struct
+        System.out.println("Debug Decoded Struct:");
+        StructLayout.debug(decodedStruct);
     }
 }
 ```
 
 Example Output:
 ```aiignore
-Decoded Struct: 
-Int Value: 42 
-Float Value: 3.14
+Debug Serialized Data:
+00000000: 2a 00 00 00 00 00 00 2a 66 e6 f6 42 48 65 6c 6c   *......*f..BHell
+00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
+00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 00 00   .......H@...?...
+00000030: 00 3f f3 ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a   .?...z.G.@.=p...
+00000040: 3d 07 00 00 00 4e 65 73 74 65 64 53 74 72 75 63   =....NestedStruc
+00000050: 74 00                                             t.
+
+Decoded Struct:
+Int32 Value (Little-Endian): 42
+Int32 Value (Big-Endian): 42
+Float Value: 123.45
+String Value: Hello, StructObject!
+Float Array: 3.14 1.59 
+Double List: 1.23 4.56 
+Custom Struct:
+  ID: 7
+  Name: NestedStruct
+
+Debug Decoded Struct:
+00000000: 2a 00 00 00 00 00 00 2a 66 e6 f6 42 48 65 6c 6c   *......*f..BHell
+00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
+00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 00 00   .......H@...?...
+00000030: 00 3f f3 ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a   .?...z.G.@.=p...
+00000040: 3d 07 00 00 00 4e 65 73 74 65 64 53 74 72 75 63   =....NestedStruc
+00000050: 74 00                                             t.
 ```
----
-
-### Debugging Byte Data
-
-Use `StructLayout.debug` to print your binary data in a human-readable format. It works with both byte arrays and structured objects:
-
-```java
-// Debugging a byte array
-StructLayout.debug(serializedData);
-
-// Debugging a struct
-StructLayout.debug(decodedStruct);
-```
-
-#### Example Output:
-```
-[DEBUG] Bytes: 00000000: 2a 00 00 00 c3 f5 48 40 03 00 00 00 01 02 03 *.....H@.......
-[DEBUG] Struct Representation: Int Value: 42 Float Value: 3.14 Byte Array: [1, 2, 3]
-```
-
----
-
-## Running Tests
-
-You can run the tests to ensure everything works correctly. StructLayout uses JUnit for testing.
-
-### Run Tests with Maven:
-```bash
-mvn test
-```
-
-### Run Tests with Gradle:
-```bash
-gradle test
-```
-
 ---
 
 ## License
 
 StructLayout is licensed under the **MIT License**. For more details, refer to the [LICENSE](LICENSE) file.
-
----
-
-## Contact
-
-If you have any questions or suggestions, please feel free to contact us at:  
-**developer@deanly.net**
-
----
-
-Start structuring your binary data with **StructLayout** today! 
