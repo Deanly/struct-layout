@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'net.deanly'
-version = '0.1.1'
+version = '0.2.0'
 
 java {
     toolchain {
@@ -81,11 +81,6 @@ publishing {
         }
     }
 }
-//
-//signing {
-//    useGpgCmd()
-//    sign publishing.publications.mavenJava
-//}
 
 jreleaser {
     signing {
