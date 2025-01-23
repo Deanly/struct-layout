@@ -1,7 +1,7 @@
 package net.deanly.structlayout.analysis;
 
 import lombok.extern.slf4j.Slf4j;
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class ClassPathScanner {
             String className = packageName + file.getName().replace(".class", "");
             try {
                 Class<?> clazz = Class.forName(className);
-                if (Layout.class.isAssignableFrom(clazz) && !clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())) {
+                if (Field.class.isAssignableFrom(clazz) && !clazz.isInterface() && !Modifier.isAbstract(clazz.getModifiers())) {
                     classes.add(clazz);
                 }
             } catch (ClassNotFoundException e) {
@@ -98,7 +98,7 @@ public class ClassPathScanner {
                     Class<?> clazz = Class.forName(className);
 
                     // Layout의 서브클래스인지 확인
-                    if (Layout.class.isAssignableFrom(clazz) && !clazz.isInterface() && !java.lang.reflect.Modifier.isAbstract(clazz.getModifiers())) {
+                    if (Field.class.isAssignableFrom(clazz) && !clazz.isInterface() && !java.lang.reflect.Modifier.isAbstract(clazz.getModifiers())) {
                         classes.add(clazz);
                         log.debug("Found Layout subclass: {}", clazz.getName());
                     }

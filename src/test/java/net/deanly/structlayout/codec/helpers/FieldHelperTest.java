@@ -1,14 +1,16 @@
 package net.deanly.structlayout.codec.helpers;
 
-import net.deanly.structlayout.Layout;
-import net.deanly.structlayout.annotation.CustomLayoutField;
-import net.deanly.structlayout.annotation.SequenceField;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.StructField;
+import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.type.BasicTypes;
+import net.deanly.structlayout.type.basic.Int16BEField;
+import net.deanly.structlayout.type.basic.Int16LEField;
+import net.deanly.structlayout.type.basic.Int32LEField;
+import net.deanly.structlayout.type.basic.Int8Field;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,26 +19,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class FieldHelperTest {
 
     static class TestStruct {
-        @StructField(order = 2, dataType = DataType.INT16_BE)
+        @StructField(order = 2, type = Int16BEField.class)
         private int field1;
 
-        @SequenceField(order = 1, elementType = DataType.INT8, lengthType = DataType.INT32_LE)
+        @StructSequenceField(order = 1, elementType = Int8Field.class, lengthType = Int32LEField.class)
         private List<Integer> field2;
 
         @StructObjectField(order = 4)
         private TestObject field3;
 
-        @CustomLayoutField(order = 3, layout = CustomLayout.class)
+        @StructField(order = 3, type = CustomField.class)
         private String field4;
     }
 
     static class TestObject {
-        @StructField(order = 1, dataType = DataType.INT16_LE)
+        @StructField(order = 1, type = Int16LEField.class)
         private int nestedField;
     }
 
-    static class CustomLayout extends Layout<String> {
-        public CustomLayout(int span) {
+    static class CustomField extends Field<String> {
+        public CustomField(int span) {
             super(1);
         }
 
@@ -53,8 +55,8 @@ class FieldHelperTest {
 
     @Test
     void testGetOrderedFields() throws NoSuchFieldException {
-        Field[] fields = TestStruct.class.getDeclaredFields();
-        List<Field> orderedFields = FieldHelper.getOrderedFields(fields);
+        java.lang.reflect.Field[] fields = TestStruct.class.getDeclaredFields();
+        List<java.lang.reflect.Field> orderedFields = FieldHelper.getOrderedFields(fields);
 
         // 정렬된 필드 순서 확인
         assertEquals(4, orderedFields.size());
@@ -66,10 +68,10 @@ class FieldHelperTest {
 
     @Test
     void testGetOrderValue() throws NoSuchFieldException {
-        Field field1 = TestStruct.class.getDeclaredField("field1");
-        Field field2 = TestStruct.class.getDeclaredField("field2");
-        Field field3 = TestStruct.class.getDeclaredField("field3");
-        Field field4 = TestStruct.class.getDeclaredField("field4");
+        java.lang.reflect.Field field1 = TestStruct.class.getDeclaredField("field1");
+        java.lang.reflect.Field field2 = TestStruct.class.getDeclaredField("field2");
+        java.lang.reflect.Field field3 = TestStruct.class.getDeclaredField("field3");
+        java.lang.reflect.Field field4 = TestStruct.class.getDeclaredField("field4");
 
         assertEquals(2, FieldHelper.getOrderValue(field1)); // StructField order
         assertEquals(1, FieldHelper.getOrderValue(field2)); // SequenceField order
@@ -83,7 +85,7 @@ class FieldHelperTest {
             private int invalidField; // 어노테이션 없음
         }
 
-        Field invalidField;
+        java.lang.reflect.Field invalidField;
         try {
             invalidField = InvalidClass.class.getDeclaredField("invalidField");
         } catch (NoSuchFieldException e) {

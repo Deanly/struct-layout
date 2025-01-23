@@ -1,10 +1,14 @@
 package net.deanly.structlayout.codec.encode;
 
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.CachedLayoutProvider;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.exception.*;
-import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.type.BasicTypes;
+import net.deanly.structlayout.type.basic.Int16BEField;
+import net.deanly.structlayout.type.basic.Int16LEField;
+import net.deanly.structlayout.type.basic.Int32BEField;
+import net.deanly.structlayout.type.basic.Int8Field;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -15,26 +19,26 @@ import static org.junit.jupiter.api.Assertions.*;
 class StructEncoderTest {
 
     public static class SampleObject {
-        @StructField(order = 1, dataType = DataType.INT32_BE)
+        @StructField(order = 1, type = Int32BEField.class)
         public int field1 = 123;
 
-        @SequenceField(order = 2, lengthType = DataType.INT8, elementType = DataType.INT16_LE)
+        @StructSequenceField(order = 2, lengthType = Int8Field.class, elementType = Int16LEField.class)
         public List<Short> listField = List.of((short) 1, (short) 2, (short) 3);
 
         @StructObjectField(order = 3)
         public NestedObject nestedObject = new NestedObject();
 
-        @CustomLayoutField(order = 4, layout = MyCustomLayout.class)
+        @StructField(order = 4, type = MyCustomField.class)
         public long customField = 987654321L;
     }
 
     public static class NestedObject {
-        @StructField(order = 1, dataType = DataType.INT16_BE)
+        @StructField(order = 1, type = Int16BEField.class)
         public short field = 42;
     }
 
-    public static class MyCustomLayout extends Layout<Long> {
-        public MyCustomLayout() {
+    public static class MyCustomField extends Field<Long> {
+        public MyCustomField() {
             super(8);
         }
 
@@ -94,8 +98,8 @@ class StructEncoderTest {
     @Test
     void testInvalidSequenceField() {
         class InvalidSequenceObject {
-            @SequenceField(order = 1, lengthType = DataType.INT8, elementType = DataType.INT16_LE)
-            public String invalidSequence = "Invalid"; // 수정된 DataType 사용
+            @StructSequenceField(order = 1, lengthType = Int8Field.class, elementType = Int16LEField.class)
+            public String invalidSequence = "Invalid"; // 수정된 Field 사용
         }
 
         InvalidSequenceObject obj = new InvalidSequenceObject();
@@ -103,8 +107,8 @@ class StructEncoderTest {
                 "Invalid sequence type should throw InvalidSequenceTypeException");
     }
 
-    public static class MyBrokenCustomLayout extends Layout<Integer> {
-        public MyBrokenCustomLayout() {
+    public static class MyBrokenCustomField extends Field<Integer> {
+        public MyBrokenCustomField() {
             super(4);
         }
 
@@ -120,7 +124,7 @@ class StructEncoderTest {
     }
 
     public static class InvalidCustomLayout {
-        @CustomLayoutField(order = 1, layout = MyBrokenCustomLayout.class)
+        @StructField(order = 1, type = MyBrokenCustomField.class)
         public int invalidField = 100;
     }
 
@@ -134,7 +138,7 @@ class StructEncoderTest {
     @Test
     void testEmptyListArrayEncoding() {
         class EmptyListObject {
-            @SequenceField(order = 1, lengthType = DataType.INT8, elementType = DataType.INT16_LE)
+            @StructSequenceField(order = 1, lengthType = Int8Field.class, elementType = Int16LEField.class)
             public List<Short> emptyList = new ArrayList<>();
         }
 
@@ -146,8 +150,8 @@ class StructEncoderTest {
     }
 
     // No-Argument 생성자가 없는 경우 (NoSuchMethodException 발생)
-    static class NoDefaultConstructorLayout extends Layout<Integer> {
-        public NoDefaultConstructorLayout(String arg) { // 파라미터가 있는 생성자만 존재
+    static class NoDefaultConstructorField extends Field<Integer> {
+        public NoDefaultConstructorField(String arg) { // 파라미터가 있는 생성자만 존재
             super(4);
         }
 
@@ -165,12 +169,12 @@ class StructEncoderTest {
     @Test
     void testNoDefaultConstructor() {
         assertThrows(LayoutInitializationException.class,
-                () -> CachedLayoutProvider.getLayout(NoDefaultConstructorLayout.class),
+                () -> CachedLayoutProvider.getLayout(NoDefaultConstructorField.class),
                 "Should throw exception for a class without a no-arguments constructor");
     }
 
-    public static class PrivateConstructorLayout extends Layout<Integer> {
-        private PrivateConstructorLayout() { // private 생성자
+    public static class PrivateConstructorField extends Field<Integer> {
+        private PrivateConstructorField() { // private 생성자
             super(4);
         }
 
@@ -187,13 +191,13 @@ class StructEncoderTest {
 
     @Test
     void testPrivateConstructor() {
-        Layout<Integer> layout = CachedLayoutProvider.getLayout(PrivateConstructorLayout.class);
-        assertNotNull(layout, "Should successfully instantiate a class with a private constructor");
+        Field<Integer> field = CachedLayoutProvider.getLayout(PrivateConstructorField.class);
+        assertNotNull(field, "Should successfully instantiate a class with a private constructor");
     }
 
     // 내부 클래스이지만 static이 아닌 경우
-    public class NonStaticInnerLayout extends Layout<Integer> { // static이 아님
-        public NonStaticInnerLayout() {
+    public class NonStaticInnerField extends Field<Integer> { // static이 아님
+        public NonStaticInnerField() {
             super(4);
         }
 
@@ -211,7 +215,7 @@ class StructEncoderTest {
     @Test
     void testNonStaticInnerClass() {
         LayoutInitializationException exception = assertThrows(LayoutInitializationException.class,
-                () -> CachedLayoutProvider.getLayout(NonStaticInnerLayout.class),
+                () -> CachedLayoutProvider.getLayout(NonStaticInnerField.class),
                 "Should throw exception for non-static inner class");
 
         assertTrue(exception.getMessage().contains("non-static inner class"),
@@ -219,8 +223,8 @@ class StructEncoderTest {
     }
 
     // 생성자 호출 자체에서 예외가 발생하는 경우 (InvocationTargetException 발생)
-    public static class ExceptionThrowingConstructorLayout extends Layout<Integer> {
-        public ExceptionThrowingConstructorLayout() {
+    public static class ExceptionThrowingConstructorField extends Field<Integer> {
+        public ExceptionThrowingConstructorField() {
             super(4);
             throw new IllegalArgumentException("Simulating an error inside constructor");
         }
@@ -239,7 +243,7 @@ class StructEncoderTest {
     @Test
     void testExceptionInConstructor() {
         LayoutInitializationException exception = assertThrows(LayoutInitializationException.class,
-                () -> CachedLayoutProvider.getLayout(ExceptionThrowingConstructorLayout.class),
+                () -> CachedLayoutProvider.getLayout(ExceptionThrowingConstructorField.class),
                 "Should throw exception for constructor throwing exception");
 
         assertTrue(exception.getMessage().contains("Exception occurred while initializing Layout"),
@@ -250,8 +254,8 @@ class StructEncoderTest {
     }
 
     // 추상 클래스 (InstantiationException 발생)
-    public static abstract class AbstractLayout extends Layout<Integer> {
-        public AbstractLayout() {
+    public static abstract class AbstractField extends Field<Integer> {
+        public AbstractField() {
             super(4);
         }
 
@@ -269,7 +273,7 @@ class StructEncoderTest {
     @Test
     void testAbstractClass() {
         LayoutInitializationException exception = assertThrows(LayoutInitializationException.class,
-                () -> CachedLayoutProvider.getLayout(AbstractLayout.class),
+                () -> CachedLayoutProvider.getLayout(AbstractField.class),
                 "Should throw exception for abstract class");
 
         assertTrue(exception.getMessage().contains("Cannot instantiate Layout class"),
@@ -277,8 +281,8 @@ class StructEncoderTest {
     }
 
     // 올바른 클래스가 정상적으로 생성되는지 확인
-    public static class ValidLayout extends Layout<Integer> {
-        public ValidLayout() {
+    public static class ValidField extends Field<Integer> {
+        public ValidField() {
             super(4);
         }
 
@@ -295,7 +299,7 @@ class StructEncoderTest {
 
     @Test
     void testValidLayoutCreation() {
-        Layout<Integer> layout = CachedLayoutProvider.getLayout(ValidLayout.class);
-        assertNotNull(layout, "Should successfully instantiate a valid Layout class");
+        Field<Integer> field = CachedLayoutProvider.getLayout(ValidField.class);
+        assertNotNull(field, "Should successfully instantiate a valid Layout class");
     }
 }

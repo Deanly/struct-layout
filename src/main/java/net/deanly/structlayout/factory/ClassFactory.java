@@ -1,14 +1,24 @@
 package net.deanly.structlayout.factory;
 
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.exception.LayoutInitializationException;
 import net.deanly.structlayout.exception.NoDefaultConstructorException;
+import net.deanly.structlayout.type.basic.BasicType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 public class ClassFactory {
+
+    @SuppressWarnings("unchecked")
+    public static Field<?> createInstance(BasicType basicType) {
+        if (!(basicType instanceof Field<?>)) {
+            throw new IllegalArgumentException("Provided BasicType does not implement Field: " + basicType.getClass().getName());
+        }
+        Class<? extends Field<?>> fieldClass = (Class<? extends Field<?>>) basicType.getClass();
+        return ClassFactory.createLayoutInstance(fieldClass);
+    }
 
     public static <T> T createNoArgumentsInstance(Class<T> type) {
         try {
@@ -51,7 +61,7 @@ public class ClassFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Layout<T> createLayoutInstance(Class<? extends Layout<?>> layoutClass) {
+    public static <T> Field<T> createLayoutInstance(Class<? extends Field<?>> layoutClass) {
         try {
             // 비정적(non-static) 내부 클래스인지 검증
             if (layoutClass.isMemberClass() && !Modifier.isStatic(layoutClass.getModifiers())) {
@@ -68,8 +78,8 @@ public class ClassFactory {
             }
 
             // 생성자 가져오기
-            Constructor<? extends Layout<?>>[] constructors =
-                    (Constructor<? extends Layout<?>>[]) layoutClass.getDeclaredConstructors();
+            Constructor<? extends Field<?>>[] constructors =
+                    (Constructor<? extends Field<?>>[]) layoutClass.getDeclaredConstructors();
 
             boolean hasNoArgConstructor = false;
             for (Constructor<?> constructor : constructors) {
@@ -88,7 +98,7 @@ public class ClassFactory {
 
             var constructor = layoutClass.getDeclaredConstructor();
             constructor.setAccessible(true);
-            return (Layout<T>) constructor.newInstance();
+            return (Field<T>) constructor.newInstance();
 
         } catch (LayoutInitializationException e) {
             throw e;

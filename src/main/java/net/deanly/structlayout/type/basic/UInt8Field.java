@@ -1,0 +1,31 @@
+package net.deanly.structlayout.type.basic;
+
+import net.deanly.structlayout.Field;
+
+public class UInt8Field extends Field<Short> implements CountableType {
+
+    public UInt8Field(String property) {
+        super(1, property); // 1 byte
+    }
+
+    public UInt8Field() {
+        this(null);
+    }
+
+    @Override
+    public Short decode(byte[] data, int offset) {
+        if (data == null) {
+            throw new IllegalArgumentException("Data cannot be null.");
+        }
+        return (short) (data[offset] & 0xFF); // 부호 없는 8비트 정수
+    }
+
+    @Override
+    public byte[] encode(Short value) {
+        if (value == null || value < 0 || value > 255) {
+            throw new IllegalArgumentException("Value must be in the range 0 to 255.");
+        }
+        return new byte[]{value.byteValue()}; // 1바이트로 인코딩
+    }
+
+}

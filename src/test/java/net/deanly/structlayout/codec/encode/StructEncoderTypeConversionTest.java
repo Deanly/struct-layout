@@ -1,7 +1,7 @@
 package net.deanly.structlayout.codec.encode;
 
-import net.deanly.structlayout.type.DataType;
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.BasicTypes;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -13,12 +13,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt8ToShortConversion() {
         // Arrange
-        Layout<Short> layout = createLayout(DataType.UINT8);
+        Field<Short> field = createLayout(BasicTypes.UINT8);
         short expectedValue = 255; // Max value for UINT8
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        Short decodedValue = layout.decode(encoded, 0);
+        Short decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, "UINT8 -> Short conversion failed.");
@@ -27,12 +27,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt16ToIntegerConversion() {
         // Arrange
-        Layout<Integer> layout = createLayout(DataType.UINT16_BE);
+        Field<Integer> field = createLayout(BasicTypes.UINT16_BE);
         int expectedValue = 65535; // Max value for UINT16
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        Integer decodedValue = layout.decode(encoded, 0);
+        Integer decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, "UINT16 -> Integer conversion failed.");
@@ -41,12 +41,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt32ToLongConversion() {
         // Arrange
-        Layout<Long> layout = createLayout(DataType.UINT32_LE);
+        Field<Long> field = createLayout(BasicTypes.UINT32_LE);
         long expectedValue = 4294967295L; // Max value for UINT32
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        Long decodedValue = layout.decode(encoded, 0);
+        Long decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, "UINT32 -> Long conversion failed.");
@@ -55,12 +55,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt64ToBigIntegerConversion() {
         // Arrange
-        Layout<BigInteger> layout = createLayout(DataType.UINT64_LE);
+        Field<BigInteger> field = createLayout(BasicTypes.UINT64_LE);
         BigInteger expectedValue = new BigInteger("18446744073709551615"); // Max UINT64
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        BigInteger decodedValue = layout.decode(encoded, 0);
+        BigInteger decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, "UINT64 -> BigInteger conversion failed.");
@@ -69,12 +69,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testFloat32ToFloatConversion() {
         // Arrange
-        Layout<Float> layout = createLayout(DataType.FLOAT32_BE);
+        Field<Float> field = createLayout(BasicTypes.FLOAT32_BE);
         float expectedValue = 3.14f;
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        Float decodedValue = layout.decode(encoded, 0);
+        Float decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, 0.0001f, "FLOAT32 -> Float conversion failed.");
@@ -83,12 +83,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testFloat64ToDoubleConversion() {
         // Arrange
-        Layout<Double> layout = createLayout(DataType.FLOAT64_LE);
+        Field<Double> field = createLayout(BasicTypes.FLOAT64_LE);
         double expectedValue = 1234567.89;
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        Double decodedValue = layout.decode(encoded, 0);
+        Double decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, 0.00001, "FLOAT64 -> Double conversion failed.");
@@ -97,12 +97,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testInt64ToLongConversion() {
         // Arrange
-        Layout<Long> layout = createLayout(DataType.INT64_LE);
+        Field<Long> field = createLayout(BasicTypes.INT64_LE);
         long expectedValue = -1234567890123456789L; // Large signed 64-bit integer
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        Long decodedValue = layout.decode(encoded, 0);
+        Long decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, "INT64 -> Long conversion failed.");
@@ -111,12 +111,12 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testStringCLayoutConversion() {
         // Arrange
-        Layout<String> layout = createLayout(DataType.STRING_C);
+        Field<String> field = createLayout(BasicTypes.STRING_C);
         String expectedValue = "Hello World!";
-        byte[] encoded = layout.encode(expectedValue);
+        byte[] encoded = field.encode(expectedValue);
 
         // Act
-        String decodedValue = layout.decode(encoded, 0);
+        String decodedValue = field.decode(encoded, 0);
 
         // Assert
         assertEquals(expectedValue, decodedValue, "STRING_C -> String conversion failed.");
@@ -125,27 +125,28 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testInvalidUInt8Conversion() {
         // Arrange
-        Layout<Short> layout = createLayout(DataType.UINT8);
+        Field<Short> field = createLayout(BasicTypes.UINT8);
 
         // Act & Assert
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            layout.encode((short) 256); // UINT8 Max = 255
+            field.encode((short) 256); // UINT8 Max = 255
         });
 
         assertTrue(exception.getMessage().contains("Value must be in the range 0 to 255"), "Expected out-of-range exception for UINT8.");
     }
 
     /**
-     * Helper method to create a layout instance for a given DataType.
+     * Helper method to create a layout instance for a given Field.
      *
-     * @param dataType The DataType enum value.
-     * @return The Layout instance associated with the specified DataType.
+     * @param basicTypes The Field enum value.
+     * @return The Layout instance associated with the specified Field.
      */
-    private <T> Layout<T> createLayout(DataType dataType) {
+    @SuppressWarnings("unchecked")
+    private <T> Field<T> createLayout(Class<? extends Field<?>> basicTypes) {
         try {
-            return (Layout<T>) dataType.getLayout().getDeclaredConstructor().newInstance();
+            return (Field<T>) basicTypes.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create layout for DataType: " + dataType, e);
+            throw new RuntimeException("Failed to create layout for Field: " + basicTypes, e);
         }
     }
 }

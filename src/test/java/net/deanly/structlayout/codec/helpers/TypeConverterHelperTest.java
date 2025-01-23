@@ -1,7 +1,8 @@
 package net.deanly.structlayout.codec.helpers;
 
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.exception.TypeConversionException;
-import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.type.BasicTypes;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -110,20 +111,20 @@ public class TypeConverterHelperTest {
 
     @Test
     public void testConvertToLayoutType_WithValidDataType() {
-        // Mocked DataType
-        DataType dataType = DataType.INT32_LE;
+        // Mocked Field
+        Class<? extends Field<?>> basicTypes = BasicTypes.INT32_LE;
 
-        assertEquals(123, TypeConverterHelper.convertToLayoutType("123", dataType));
-        assertEquals(0, TypeConverterHelper.convertToLayoutType(null, dataType));
+        assertEquals(123, TypeConverterHelper.convertToLayoutType("123", basicTypes));
+        assertEquals(0, TypeConverterHelper.convertToLayoutType(null, basicTypes));
     }
 
     @Test
     public void testConvertToLayoutType_InvalidConversion() {
-        // Mocked DataType
-        DataType dataType = DataType.INT32_BE;
+        // Mocked Field
+        Class<? extends Field<?>> basicTypes = BasicTypes.INT32_BE;
 
         Exception exception = assertThrows(TypeConversionException.class, () ->
-                TypeConverterHelper.convertToLayoutType("Not a number", dataType));
+                TypeConverterHelper.convertToLayoutType("Not a number", basicTypes));
         assertTrue(exception.getMessage().contains("Cannot convert String to"));
     }
 
