@@ -1,10 +1,14 @@
 package net.deanly.structlayout.codec.decode;
 
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.exception.InvalidDataOffsetException;
 import net.deanly.structlayout.exception.StructParsingException;
-import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.type.BasicTypes;
+import net.deanly.structlayout.type.basic.Int16BEField;
+import net.deanly.structlayout.type.basic.Int16LEField;
+import net.deanly.structlayout.type.basic.Int32BEField;
+import net.deanly.structlayout.type.basic.Int8Field;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,16 +18,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class StructDecoderTest {
 
     public static class SampleObject {
-        @StructField(order = 1, dataType = DataType.INT32_BE)
+        @StructField(order = 1, type = Int32BEField.class)
         public int field1;
 
-        @SequenceField(order = 2, lengthType = DataType.INT8, elementType = DataType.INT16_LE)
+        @StructSequenceField(order = 2, lengthType = Int8Field.class, elementType = Int16LEField.class)
         public List<Short> listField;
 
         @StructObjectField(order = 3)
         public NestedObject nestedObject;
 
-        @CustomLayoutField(order = 4, layout = MyCustomLayout.class)
+        @StructField(order = 4, type = MyCustomField.class)
         public long customField;
 
         // 기본 생성자 필수
@@ -31,14 +35,14 @@ class StructDecoderTest {
     }
 
     public static class NestedObject {
-        @StructField(order = 1, dataType = DataType.INT16_BE)
+        @StructField(order = 1, type = Int16BEField.class)
         public short field;
 
         public NestedObject() {}
     }
 
-    public static class MyCustomLayout extends Layout<Long> {
-        public MyCustomLayout() {
+    public static class MyCustomField extends Field<Long> {
+        public MyCustomField() {
             super(8);
         }
 
@@ -124,8 +128,8 @@ class StructDecoderTest {
                 "Decoding an empty byte array should throw InvalidDataOffsetException");
     }
 
-    public static class MyBrokenCustomLayout extends Layout<Integer> {
-        public MyBrokenCustomLayout() {
+    public static class MyBrokenCustomField extends Field<Integer> {
+        public MyBrokenCustomField() {
             super(4);
         }
 
@@ -141,7 +145,7 @@ class StructDecoderTest {
     }
 
     public static class InvalidCustomLayoutObject {
-        @CustomLayoutField(order = 1, layout = MyBrokenCustomLayout.class)
+        @StructField(order = 1, type = MyBrokenCustomField.class)
         public int invalidField;
 
         public InvalidCustomLayoutObject() {}
@@ -159,7 +163,7 @@ class StructDecoderTest {
 
     // When: Decode the data into a class with an empty list
     public static class EmptyListObject {
-        @SequenceField(order = 1, lengthType = DataType.INT8, elementType = DataType.INT16_LE)
+        @StructSequenceField(order = 1, lengthType = Int8Field.class, elementType = Int16LEField.class)
         public List<Short> emptyList;
 
         public EmptyListObject() {}

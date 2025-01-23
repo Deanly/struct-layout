@@ -19,7 +19,7 @@ With StructLayout, managing structured binary data—common in file processing, 
 - **Efficient Encoding/Decoding**:
   Transform objects to binary data and vice versa in just one line of code using `StructLayout.encode()` and `StructLayout.decode()`.
 - **Debugging Support**:
-  Visualize and debug complex binary data with built-in utilities like `StructLayout.debug()`.
+  Visualize and debug complex binary data in a human-readable format using the `StructLayout.debug()` utility.
 
 ---
 
@@ -27,7 +27,7 @@ With StructLayout, managing structured binary data—common in file processing, 
 
 To use StructLayout, you need **Java 17** or higher. StructLayout can be used from Maven Central as shown below.
 
-### Adding GitHub Maven Repository
+### Adding the Dependency
 
 To integrate StructLayout into your project, you need to add the following repository to your **Maven** or **Gradle** configuration.
 
@@ -39,7 +39,7 @@ And include the dependency in your `pom.xml`:
     <dependency>
         <groupId>net.deanly</groupId>
         <artifactId>struct-layout</artifactId>
-        <version>0.1.1</version>
+        <version>0.2.0</version>
     </dependency>
 </dependencies>
 ```
@@ -49,7 +49,7 @@ Add the GitHub repository to your `build.gradle` file:
 
 ```gradle
 dependencies {
-    implementation 'net.deanly:struct-layout:0.1.1'
+    implementation 'net.deanly:struct-layout:0.2.0'
 }
 ```
 
@@ -59,34 +59,32 @@ dependencies {
 
 ### Define a Struct Class
 
-Define a class to represent the structure of your binary data. Use StructLayout annotations like `@StructField` for fields and `@SequenceField` for collections.
+Define a Java class to represent the layout of structured binary data. Add `StructLayout` annotations to its fields to specify the order and data type of each field.
 
 ```java
-import net.deanly.structlayout.annotation.StructField;
-import net.deanly.structlayout.annotation.SequenceField;
+import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.annotation.CustomLayoutField;
-import net.deanly.structlayout.type.DataType;
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.annotation.StructField;
+import net.deanly.structlayout.Field;
 
 // Define your Struct class
 class SimpleStruct {
-    @StructField(order = 1, dataType = DataType.INT32_LE)
+    @StructField(order = 1, type = Int32LEField.class)
     private int int32Value;
 
-    @StructField(order = 2, dataType = DataType.INT32_BE)
+    @StructField(order = 2, type = Int32BEField.class)
     private int int32BeValue;
 
-    @StructField(order = 3, dataType = DataType.FLOAT32_LE)
+    @StructField(order = 3, type = Float32LEField.class)
     private float floatValue;
 
-    @StructField(order = 4, dataType = DataType.STRING_C)
+    @StructField(order = 4, type = StringCField.class)
     private String stringValue;
 
-    @SequenceField(order = 5, elementType = DataType.FLOAT32_LE)
+    @StructSequenceField(order = 5, elementType = Float32LEField.class)
     private float[] floatArray;
 
-    @SequenceField(order = 6, elementType = DataType.FLOAT64_BE)
+    @StructSequenceField(order = 6, elementType = Float64BEField.class)
     private List<Double> doubleList;
 
     @StructObjectField(order = 7)
@@ -96,10 +94,10 @@ class SimpleStruct {
 }
 
 class CustomStruct {
-    @StructField(order = 1, dataType = DataType.INT32_LE)
+    @StructField(order = 1, type = Int32LEField.class)
     private long id; // Although it's INT32_LE in bytes, it is represented as a long type in Java.
 
-    @CustomLayoutField(order = 2, layout = KeyLayout.class)
+    @StructField(order = 2, type = KeyField.class)
     private String key;
 
     public CustomStruct() {
@@ -112,21 +110,28 @@ class CustomStruct {
     // Getter and Setter...
 }
 
-class KeyLayout extends Layout<String> {
-  private static final int KEY_LENGTH = 32; // 32 bytes
-  public KeyLayout() {
-    super(KEY_LENGTH);
-  }
+public static class KeyField extends Field<String> {
+    private static final int KEY_LENGTH = 32; // 32 bytes
+    public KeyField() {
+        super(KEY_LENGTH); // Defines a fixed byte size for the inherited field to handle static-sized binary data
+    }
 
-  @Override
-  public byte[] encode(String value) {
-    return value.getBytes(StandardCharsets.UTF_8);
-  }
+    @Override
+    public byte[] encode(String value) {
+        byte[] byteValue = value.getBytes(StandardCharsets.UTF_8);
+        if (byteValue.length != KEY_LENGTH) {
+            throw new RuntimeException(String.format("Invalid KeyField length: expected %d bytes but was %d bytes.", KEY_LENGTH, byteValue.length));
+        }
+        return byteValue;
+    }
 
-  @Override
-  public String decode(byte[] buffer, int offset) {
-    return new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8);
-  }
+    @Override
+    public String decode(byte[] buffer, int offset) {
+        if (buffer == null || buffer.length < offset + KEY_LENGTH) {
+            throw new RuntimeException(String.format("Invalid buffer length for KeyField decoding. Expected at least %d bytes from offset %d.", KEY_LENGTH, offset));
+        }
+        return new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8);
+    }
 }
 ```
 

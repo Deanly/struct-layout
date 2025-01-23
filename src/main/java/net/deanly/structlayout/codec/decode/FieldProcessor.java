@@ -15,10 +15,9 @@ public class FieldProcessor {
     private static final Map<Class<? extends Annotation>, BaseFieldHandler> HANDLERS = new HashMap<>();
 
     static {
-        HANDLERS.put(StructField.class, new StructFieldHandler());
-        HANDLERS.put(SequenceField.class, new SequenceFieldHandler());
+        HANDLERS.put(StructSequenceField.class, new SequenceFieldHandler());
         HANDLERS.put(StructObjectField.class, new StructObjectFieldHandler());
-        HANDLERS.put(CustomLayoutField.class, new CustomLayoutFieldHandler());
+        HANDLERS.put(StructField.class, new StructFieldHandler());
     }
 
     public static <T> int processField(T instance, Field field, byte[] data, int offset) {
@@ -29,16 +28,16 @@ public class FieldProcessor {
                 } catch (IllegalAccessException e) {
                     throw new FieldAccessException(field.getName(), field.getClass().getSimpleName(), e);
                 } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException("Failed to process field: " + field.getName() + " => " + e.getMessage(), e);
+                    throw new IllegalArgumentException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (TypeConversionException e) {
-                    throw new TypeConversionException("Failed to process field: " + field.getName() + " => " + e.getMessage(), e);
+                    throw new TypeConversionException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (StructParsingException e) {
                     throw e;
                 } catch (RuntimeException e) {
-                    throw new StructParsingException("Failed to process field: " + field.getName() + " => " + e.getMessage(), e);
+                    throw new StructParsingException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 }
             }
         }
-        throw new IllegalArgumentException("No handler found for field: " + field.getName());
+        throw new IllegalArgumentException("No handler found for field: `" + field.getName() + "`");
     }
 }

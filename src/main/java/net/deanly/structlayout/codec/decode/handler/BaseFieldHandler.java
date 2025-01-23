@@ -1,16 +1,13 @@
 package net.deanly.structlayout.codec.decode.handler;
 
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.CachedLayoutProvider;
-import net.deanly.structlayout.type.DataType;
-
-import java.lang.reflect.Field;
 
 public abstract class BaseFieldHandler {
 
-    public abstract <T> int handleField(T instance, Field field, byte[] data, int offest) throws IllegalAccessException;
+    public abstract <T> int handleField(T instance, java.lang.reflect.Field field, byte[] data, int offest) throws IllegalAccessException;
 
-    protected Layout<Object> resolveLayout(DataType dataType) {
-        return CachedLayoutProvider.getLayout(dataType);
+    protected Field<Object> resolveLayout(Class<? extends Field<?>> fieldType) {
+        return CachedLayoutProvider.getLayout(fieldType);
     }
 }

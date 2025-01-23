@@ -1,12 +1,11 @@
 package net.deanly.structlayout.analysis;
 
-import net.deanly.structlayout.Layout;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.StructField;
-import net.deanly.structlayout.annotation.SequenceField;
+import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.type.DataType;
+import net.deanly.structlayout.type.basic.CountableType;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -31,14 +30,14 @@ public class StructAnalyzer {
         int totalSize = 0;
 
         // Iterate over all fields in the class
-        for (Field field : structClass.getDeclaredFields()) {
+        for (java.lang.reflect.Field field : structClass.getDeclaredFields()) {
 
             // Process each annotation type
             if (field.isAnnotationPresent(StructField.class)) {
                 Object fieldValue = getFieldValue(structInstance, field);
                 totalSize += calculateStructFieldSize(field);
 
-            } else if (field.isAnnotationPresent(SequenceField.class)) {
+            } else if (field.isAnnotationPresent(StructSequenceField.class)) {
                 Object fieldValue = getFieldValue(structInstance, field);
                 totalSize += calculateSequenceFieldSize(field, fieldValue);
 
@@ -51,41 +50,42 @@ public class StructAnalyzer {
         return totalSize;
     }
 
-    private static int calculateStructFieldSize(Field field) {
-        StructField structField = field.getAnnotation(StructField.class);
-        DataType dataType = structField.dataType();
+    private static int calculateStructFieldSize(java.lang.reflect.Field field) {
+        StructField basicStructField = field.getAnnotation(StructField.class);
+        Class<? extends Field<?>> dataType = basicStructField.type();
 
         // Use layout mapping to determine size.
-        Layout<?> layout = CachedLayoutProvider.getLayout(dataType);
+        Field<?> layout = CachedLayoutProvider.getLayout(dataType);
         return layout.getSpan();
     }
 
-    private static int calculateSequenceFieldSize(Field field, Object fieldValue) {
+    private static int calculateSequenceFieldSize(java.lang.reflect.Field field, Object fieldValue) {
         if (!(fieldValue instanceof Collection<?> collection)) {
             throw new IllegalArgumentException(String.format(
-                    "Field '%s' must be a collection for @SequenceField.", field.getName()));
+                    "Field '%s' must be a collection for @StructSequenceField.", field.getName()));
         }
-
-        SequenceField sequenceField = field.getAnnotation(SequenceField.class);
+        StructSequenceField structSequenceField = field.getAnnotation(StructSequenceField.class);
 
         // Length bytes (if defined) add to the total size
         int totalSize = 0;
 
-        DataType lengthType = sequenceField.lengthType();
+        Class<? extends CountableType> lengthType = structSequenceField.lengthType();
         if (lengthType != null) {
-            Layout<?> lengthLayout = CachedLayoutProvider.getLayout(lengthType);
-            totalSize += lengthLayout.getSpan();
+            @SuppressWarnings("unchecked")
+            Field<?> lengthField = CachedLayoutProvider.getLayout((Class<? extends Field<?>>) lengthType);
+            totalSize += lengthField.getSpan();
         }
 
-        // Elements' Span multiplied by collection size
-        DataType elementType = sequenceField.elementType();
-        Layout<?> elementLayout = CachedLayoutProvider.getLayout(elementType);
+        // Fetch Class for element type and resolve Layout
+        Class<? extends Field<?>> elementClass = structSequenceField.elementType();
+        Field<?> elementField = CachedLayoutProvider.getLayout(elementClass);
 
-        totalSize += elementLayout.getSpan() * collection.size();
+        // Elements' Span multiplied by collection size
+        totalSize += elementField.getSpan() * collection.size();
         return totalSize;
     }
 
-    private static int calculateStructObjectFieldSize(Field field, Object fieldValue) {
+    private static int calculateStructObjectFieldSize(java.lang.reflect.Field field, Object fieldValue) {
         // Ensure the field value is not null
         if (fieldValue == null) {
             return 0;
@@ -95,7 +95,7 @@ public class StructAnalyzer {
         return calculateSize(fieldValue);
     }
 
-    private static boolean shouldProcessField(Field field) {
+    private static boolean shouldProcessField(java.lang.reflect.Field field) {
         // Ignore synthetic, static, or transient fields (e.g., JVM-internal fields)
         if (field.isSynthetic() || Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
             return false;
@@ -114,7 +114,7 @@ public class StructAnalyzer {
     /**
      * Attempts to retrieve a field's value, falling back to direct access if a getter method is unavailable.
      */
-    private static Object getFieldValue(Object instance, Field field) {
+    private static Object getFieldValue(Object instance, java.lang.reflect.Field field) {
         try {
             String fieldName = field.getName();
             String getterName = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);

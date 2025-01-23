@@ -1,11 +1,9 @@
 package net.deanly.structlayout.codec.helpers;
 
-import net.deanly.structlayout.annotation.CustomLayoutField;
-import net.deanly.structlayout.annotation.SequenceField;
 import net.deanly.structlayout.annotation.StructField;
+import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.exception.FieldOrderException;
-import net.deanly.structlayout.type.DataType;
 import net.deanly.structlayout.type.helpers.DataTypeHelper;
 
 import java.lang.reflect.Field;
@@ -31,10 +29,9 @@ public class FieldHelper {
     public static List<Field> getOrderedFields(Field[] fields) {
         List<Field> orderedFields = new ArrayList<>();
         for (Field field : fields) {
-            if (field.isAnnotationPresent(StructField.class) ||
-                    field.isAnnotationPresent(SequenceField.class) ||
+            if (field.isAnnotationPresent(StructSequenceField.class) ||
                     field.isAnnotationPresent(StructObjectField.class) ||
-                    field.isAnnotationPresent(CustomLayoutField.class)) {
+                    field.isAnnotationPresent(StructField.class)) {
                 orderedFields.add(field);
             }
         }
@@ -57,22 +54,20 @@ public class FieldHelper {
      * @throws FieldOrderException if the field does not have a valid order annotation
      */
     public static int getOrderValue(Field field) {
-        if (field.isAnnotationPresent(StructField.class)) {
-            return field.getAnnotation(StructField.class).order();
-        } else if (field.isAnnotationPresent(SequenceField.class)) {
-            return field.getAnnotation(SequenceField.class).order();
+        if (field.isAnnotationPresent(StructSequenceField.class)) {
+            return field.getAnnotation(StructSequenceField.class).order();
         } else if (field.isAnnotationPresent(StructObjectField.class)) {
             return field.getAnnotation(StructObjectField.class).order();
-        } else if (field.isAnnotationPresent(CustomLayoutField.class)) {
-            return field.getAnnotation(CustomLayoutField.class).order();
+        } else if (field.isAnnotationPresent(StructField.class)) {
+            return field.getAnnotation(StructField.class).order();
         }
         throw new FieldOrderException(field.getName());
     }
 
 
-    public static boolean isFieldTypeApplicable(Class<?> structFieldType, DataType dataType) {
-        // DataType의 필드 타입 가져오기
-        Class<?> dataTypeFieldType = dataType.getFieldType();
+    public static boolean isFieldTypeApplicable(Class<?> structFieldType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
+        // Field의 필드 타입 가져오기
+        Class<?> dataTypeFieldType = net.deanly.structlayout.Field.getGenericTypeAsObject(fieldType);
 
         // 숫자형 변환 규칙 처리
         if (isNumericType(structFieldType) && isNumericType(dataTypeFieldType)) {
@@ -80,7 +75,7 @@ public class FieldHelper {
         }
 
         // DataTypeHelper 활용: 필드 타입 매칭 여부 확인
-        return DataTypeHelper.matches(dataType, structFieldType);
+        return DataTypeHelper.matches(fieldType, structFieldType);
     }
 
     private static boolean isNumericType(Class<?> type) {
@@ -91,10 +86,10 @@ public class FieldHelper {
     }
 
     /**
-     * 기본 배열과 DataType의 구성 요소 타입을 매칭합니다.
+     * 기본 배열과 Field의 구성 요소 타입을 매칭합니다.
      */
-    public static boolean isPrimitiveArrayApplicable(Class<?> componentType, DataType dataType) {
-        Class<?> expectedType = dataType.getFieldType(); // DataType에서 필요한 Java 타입
+    public static boolean isPrimitiveArrayApplicable(Class<?> componentType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
+        Class<?> expectedType = net.deanly.structlayout.Field.getGenericTypeAsObject(fieldType);
         if (componentType.isPrimitive()) {
             // 기본 타입 배열의 경우, 구성 요소 타입과 예상 타입 매칭
             if ((componentType == byte.class && expectedType == Byte.class) ||
@@ -110,10 +105,10 @@ public class FieldHelper {
     }
 
     /**
-     * 특정 요소 타입과 DataType의 예상 타입 매칭.
+     * 특정 요소 타입과 Field의 예상 타입 매칭.
      */
-    public static boolean isApplicableToDataType(Class<?> elementType, DataType dataType) {
-        Class<?> expectedType = dataType.getFieldType();
+    public static boolean isApplicableToDataType(Class<?> elementType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
+        Class<?> expectedType = net.deanly.structlayout.Field.getGenericTypeAsObject(fieldType);
         return elementType.equals(expectedType);
     }
 

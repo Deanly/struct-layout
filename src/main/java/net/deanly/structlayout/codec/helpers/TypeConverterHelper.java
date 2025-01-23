@@ -1,7 +1,7 @@
 package net.deanly.structlayout.codec.helpers;
 
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.exception.TypeConversionException;
-import net.deanly.structlayout.type.DataType;
 
 /**
  * Utility class for converting values of one type to another while supporting validation,
@@ -34,17 +34,14 @@ public class TypeConverterHelper {
      * Throws exceptions if conversion is not possible or value is incompatible.
      *
      * @param value      The value to be converted.
-     * @param targetType The DataType defining the target type.
+     * @param targetType The Field defining the target type.
      * @return The converted value.
      */
-    public static Object convertToLayoutType(Object value, DataType targetType) {
+    public static Object convertToLayoutType(Object value, Class<? extends Field<?>> targetType) {
         if (value == null) {
-            return handleNullValue(targetType);
+            return handleNullValue(Field.getGenericTypeAsObject(targetType));
         }
-
-        Class<?> targetClass = targetType.getFieldType();
-
-        return convertToType(value, targetClass);
+        return convertToType(value, Field.getGenericTypeAsObject(targetType));
     }
 
     /**
@@ -216,6 +213,7 @@ public class TypeConverterHelper {
         throw new TypeConversionException("Unsupported String conversion to type: " + targetClass);
     }
 
+    @SuppressWarnings("unchecked")
     private static Object convertToSpecialTypes(Object value, Class<?> targetClass) {
         if (targetClass == java.math.BigDecimal.class) {
             return new java.math.BigDecimal(value.toString());
@@ -239,10 +237,6 @@ public class TypeConverterHelper {
             return java.util.UUID.fromString(value.toString());
         }
         return null; // 다른 경우에 null 반환
-    }
-
-    private static Object handleNullValue(DataType targetType) {
-        return handleNullValue(targetType.getFieldType());
     }
 
     private static Object handleNullValue(Class<?> targetType) {

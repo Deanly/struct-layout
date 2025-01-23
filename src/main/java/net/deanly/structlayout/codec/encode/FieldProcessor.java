@@ -1,9 +1,6 @@
 package net.deanly.structlayout.codec.encode;
 
-import net.deanly.structlayout.annotation.CustomLayoutField;
-import net.deanly.structlayout.annotation.SequenceField;
-import net.deanly.structlayout.annotation.StructField;
-import net.deanly.structlayout.annotation.StructObjectField;
+import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.codec.encode.handler.*;
 import net.deanly.structlayout.exception.FieldAccessException;
 import net.deanly.structlayout.exception.StructParsingException;
@@ -19,9 +16,8 @@ public class FieldProcessor {
     private static final Map<Class<? extends Annotation>, BaseFieldHandler> HANDLERS = new HashMap<>();
 
     static {
+        HANDLERS.put(StructSequenceField.class, new SequenceFieldHandler());
         HANDLERS.put(StructField.class, new StructFieldHandler());
-        HANDLERS.put(SequenceField.class, new SequenceFieldHandler());
-        HANDLERS.put(CustomLayoutField.class, new CustomLayoutFieldHandler());
         HANDLERS.put(StructObjectField.class, new StructObjectFieldHandler());
     }
 
@@ -33,16 +29,16 @@ public class FieldProcessor {
                 } catch (IllegalAccessException e) {
                     throw new FieldAccessException(field.getName(), field.getClass().getSimpleName(), e);
                 } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException("Failed to process field: " + field.getName() + " => " + e.getMessage(), e);
+                    throw new IllegalArgumentException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (TypeConversionException e) {
-                    throw new TypeConversionException("Failed to process field: " + field.getName() + " => " + e.getMessage(), e);
+                    throw new TypeConversionException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (StructParsingException e) {
                     throw e;
                 } catch (RuntimeException e) {
-                    throw new StructParsingException("Failed to process field: " + field.getName() + " => " + e.getMessage(), e);
+                    throw new StructParsingException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 }
             }
         }
-        throw new IllegalArgumentException("No handler found for field: " + field.getName());
+        throw new IllegalArgumentException("No handler found for field: `" + field.getName() + "`");
     }
 }
