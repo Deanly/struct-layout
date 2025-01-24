@@ -2,9 +2,7 @@ package net.deanly.structlayout.codec.decode;
 
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.codec.decode.handler.*;
-import net.deanly.structlayout.exception.FieldAccessException;
-import net.deanly.structlayout.exception.StructParsingException;
-import net.deanly.structlayout.exception.TypeConversionException;
+import net.deanly.structlayout.exception.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -15,9 +13,10 @@ public class FieldProcessor {
     private static final Map<Class<? extends Annotation>, BaseFieldHandler> HANDLERS = new HashMap<>();
 
     static {
-        HANDLERS.put(StructSequenceField.class, new SequenceFieldHandler());
-        HANDLERS.put(StructObjectField.class, new StructObjectFieldHandler());
         HANDLERS.put(StructField.class, new StructFieldHandler());
+        HANDLERS.put(StructSequenceField.class, new StructSequenceFieldHandler());
+        HANDLERS.put(StructObjectField.class, new StructObjectFieldHandler());
+        HANDLERS.put(StructSequenceObjectField.class, new StructSequenceObjectFieldHandler());
     }
 
     public static <T> int processField(T instance, Field field, byte[] data, int offset) {
@@ -27,10 +26,20 @@ public class FieldProcessor {
                     return entry.getValue().handleField(instance, field, data, offset);
                 } catch (IllegalAccessException e) {
                     throw new FieldAccessException(field.getName(), field.getClass().getSimpleName(), e);
+                } catch (FieldOrderException e) {
+                    throw new FieldOrderException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (TypeConversionException e) {
                     throw new TypeConversionException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
+                } catch (InvalidDataOffsetException e) {
+                    throw new InvalidDataOffsetException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
+                } catch (InvalidSequenceTypeException e) {
+                    throw new InvalidSequenceTypeException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
+                } catch (LayoutInitializationException e) {
+                    throw new LayoutInitializationException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
+                } catch (NoDefaultConstructorException e) {
+                    throw new NoDefaultConstructorException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (StructParsingException e) {
                     throw e;
                 } catch (RuntimeException e) {

@@ -1,8 +1,8 @@
 package net.deanly.structlayout.annotation;
 
 import net.deanly.structlayout.Field;
-import net.deanly.structlayout.type.basic.CountableType;
-import net.deanly.structlayout.type.basic.UInt32LEField;
+import net.deanly.structlayout.type.CountableField;
+import net.deanly.structlayout.type.basic.UInt8Field;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -30,12 +30,12 @@ public @interface StructSequenceField {
     /**
      * Specifies the data type of the length prefix for a sequence field.
      * This determines how the length of the sequence is encoded or decoded
-     * based on the provided {@link CountableType} implementation.
+     * based on the provided {@link CountableField} implementation.
      *
      * @return the class type representing the length of the sequence,
      *         defaulting to {@code BasicTypes.UINT32_LE}.
      */
-    Class<? extends CountableType> lengthType() default UInt32LEField.class;
+    Class<? extends CountableField<?>> lengthType() default UInt8Field.class;
 
     /**
      * Specifies the type of the elements in the sequence.

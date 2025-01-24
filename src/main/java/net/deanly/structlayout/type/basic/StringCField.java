@@ -1,7 +1,7 @@
 package net.deanly.structlayout.type.basic;
 
 import lombok.extern.slf4j.Slf4j;
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.DynamicSpanField;
 
 import java.nio.charset.Charset;
@@ -48,9 +48,10 @@ import java.util.ArrayList;
  * - Internal logging mechanisms are used for debugging and traceability.
  */
 @Slf4j
-public class StringCField extends Field<String> implements DynamicSpanField, BasicType {
+public class StringCField extends FieldBase<String> implements DynamicSpanField, BasicType {
 
     private final Charset charset; // 문자열 인코딩 방식
+    private int span;
 
     /**
      * Constructs a `StringCLayout` instance with a default character set of US-ASCII.
@@ -127,6 +128,16 @@ public class StringCField extends Field<String> implements DynamicSpanField, Bas
             }
         }
         throw new IllegalArgumentException("Null-terminated character not found");
+    }
+
+    @Override
+    public void setSpan(int span) {
+        this.span = span;
+    }
+
+    @Override
+    public int getSpan() {
+        return this.span;
     }
 
     @Override

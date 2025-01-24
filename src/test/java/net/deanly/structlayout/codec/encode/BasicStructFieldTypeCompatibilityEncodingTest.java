@@ -1,6 +1,6 @@
 package net.deanly.structlayout.codec.encode;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.exception.TypeConversionException;
@@ -82,9 +82,9 @@ public class BasicStructFieldTypeCompatibilityEncodingTest {
         assertNotNull(encoded);
 
         // 디코딩 테스트
-        Field<Short> uint8Field = createLayout(BasicTypes.UINT8);
-        Field<Integer> uint16Field = createLayout(BasicTypes.UINT16_BE);
-        Field<Float> float32Field = createLayout(BasicTypes.FLOAT32_LE);
+        FieldBase<Short> uint8Field = createLayout(BasicTypes.UINT8);
+        FieldBase<Integer> uint16Field = createLayout(BasicTypes.UINT16_BE);
+        FieldBase<Float> float32Field = createLayout(BasicTypes.FLOAT32_LE);
 
         // UINT8 필드
         short uint8Decoded = uint8Field.decode(encoded, 0);
@@ -100,9 +100,9 @@ public class BasicStructFieldTypeCompatibilityEncodingTest {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Field<T> createLayout(Class<? extends Field<?>> basicType) {
+    private <T> FieldBase<T> createLayout(Class<? extends FieldBase<?>> basicType) {
         try {
-            return (Field<T>) basicType.getDeclaredConstructor().newInstance();
+            return (FieldBase<T>) basicType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Failed to create layout for Field: " + basicType, e);
         }
@@ -151,7 +151,7 @@ public class BasicStructFieldTypeCompatibilityEncodingTest {
     }
 
     // **테스트용 Custom Layout 클래스**
-    public static class CustomStringField extends Field<String> {
+    public static class CustomStringField extends FieldBase<String> {
         public CustomStringField() {
             super(10);
         }

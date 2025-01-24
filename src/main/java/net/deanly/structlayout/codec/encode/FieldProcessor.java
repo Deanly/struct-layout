@@ -16,9 +16,10 @@ public class FieldProcessor {
     private static final Map<Class<? extends Annotation>, BaseFieldHandler> HANDLERS = new HashMap<>();
 
     static {
-        HANDLERS.put(StructSequenceField.class, new SequenceFieldHandler());
         HANDLERS.put(StructField.class, new StructFieldHandler());
+        HANDLERS.put(StructSequenceField.class, new StructSequenceFieldHandler());
         HANDLERS.put(StructObjectField.class, new StructObjectFieldHandler());
+        HANDLERS.put(StructSequenceObjectField.class, new StructSequenceObjectFieldHandler());
     }
 
     public static <T> byte[] processField(T instance, Field field) {

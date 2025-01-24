@@ -1,6 +1,6 @@
 package net.deanly.structlayout.type.advanced;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.basic.Int32LEField;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ public class DynamicFieldTest {
             }
 
             @Override
-            public byte[] getDataForChild(Field<?> child) {
+            public byte[] getDataForChild(FieldBase<?> child) {
                 return new byte[0]; // Example implementation
             }
         };

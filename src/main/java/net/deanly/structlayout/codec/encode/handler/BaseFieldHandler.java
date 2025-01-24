@@ -3,6 +3,7 @@ package net.deanly.structlayout.codec.encode.handler;
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.CachedLayoutProvider;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
+import net.deanly.structlayout.type.FieldBase;
 
 public abstract class BaseFieldHandler {
 
@@ -43,9 +44,9 @@ public abstract class BaseFieldHandler {
      * Handles null values based on the target DataType.
      */
     protected Object handleNullValue(Class<? extends Field<?>> basicType) {
-        if (Field.isNumericType(basicType)) {
+        if (FieldBase.isNumericType(basicType)) {
             return 0; // Default for numeric types
-        } else if (Field.isStringType(basicType)) {
+        } else if (FieldBase.isStringType(basicType)) {
             return ""; // Default for strings
         }
         throw new IllegalArgumentException("Field value cannot be null for Field: " + basicType);

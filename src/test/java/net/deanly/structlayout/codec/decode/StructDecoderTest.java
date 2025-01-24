@@ -1,10 +1,9 @@
 package net.deanly.structlayout.codec.decode;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.exception.InvalidDataOffsetException;
 import net.deanly.structlayout.exception.StructParsingException;
-import net.deanly.structlayout.type.BasicTypes;
 import net.deanly.structlayout.type.basic.Int16BEField;
 import net.deanly.structlayout.type.basic.Int16LEField;
 import net.deanly.structlayout.type.basic.Int32BEField;
@@ -41,7 +40,7 @@ class StructDecoderTest {
         public NestedObject() {}
     }
 
-    public static class MyCustomField extends Field<Long> {
+    public static class MyCustomField extends FieldBase<Long> {
         public MyCustomField() {
             super(8);
         }
@@ -81,7 +80,7 @@ class StructDecoderTest {
         };
 
         // When: Decode the byte array into a SampleObject
-        SampleObject decoded = StructDecoder.decode(SampleObject.class, encodedData, 0);
+        SampleObject decoded = StructDecoder.decode(SampleObject.class, encodedData, 0).getValue();
 
         // Then: Assert the fields are correctly decoded
         assertNotNull(decoded, "Decoded object should not be null");
@@ -128,7 +127,7 @@ class StructDecoderTest {
                 "Decoding an empty byte array should throw InvalidDataOffsetException");
     }
 
-    public static class MyBrokenCustomField extends Field<Integer> {
+    public static class MyBrokenCustomField extends FieldBase<Integer> {
         public MyBrokenCustomField() {
             super(4);
         }
@@ -177,7 +176,7 @@ class StructDecoderTest {
                 0x00
         };
 
-        EmptyListObject decoded = StructDecoder.decode(EmptyListObject.class, encodedData, 0);
+        EmptyListObject decoded = StructDecoder.decode(EmptyListObject.class, encodedData, 0).getValue();
 
         // Then: Assert the list is initialized and empty
         assertNotNull(decoded.emptyList, "Decoded list should not be null");
@@ -193,7 +192,7 @@ class StructDecoderTest {
         };
 
         // When: Decode the byte array into a nested object
-        NestedObject decoded = StructDecoder.decode(NestedObject.class, encodedData, 0);
+        NestedObject decoded = StructDecoder.decode(NestedObject.class, encodedData, 0).getValue();
 
         // Then: Assert the field is correctly decoded
         assertNotNull(decoded, "Nested object should not be null");

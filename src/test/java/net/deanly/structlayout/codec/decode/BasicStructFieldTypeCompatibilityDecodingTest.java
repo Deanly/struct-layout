@@ -1,6 +1,6 @@
 package net.deanly.structlayout.codec.decode;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
@@ -30,7 +30,7 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
         int startOffset = 0;
 
         // Act: 데이터를 디코딩
-        SimpleStruct decoded = StructDecoder.decode(SimpleStruct.class, data, startOffset);
+        SimpleStruct decoded = StructDecoder.decode(SimpleStruct.class, data, startOffset).getValue();
 
         // Assert: 각 필드별 올바른 디코딩 검증
         assertEquals(255, decoded.uint8Field);       // UINT8: 255
@@ -51,7 +51,7 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
         int startOffset = 0;
 
         // Act
-        CompatibleStruct decoded = StructDecoder.decode(CompatibleStruct.class, data, startOffset);
+        CompatibleStruct decoded = StructDecoder.decode(CompatibleStruct.class, data, startOffset).getValue();
 
         // Assert: 각 필드가 의도한 타입으로 변환되었는지 확인
         assertEquals(255, decoded.uint8AsInt); // UINT8 필드를 int로
@@ -86,7 +86,7 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
         int offset = 0;
 
         // Act
-        SequenceStruct decoded = StructDecoder.decode(SequenceStruct.class, data, offset);
+        SequenceStruct decoded = StructDecoder.decode(SequenceStruct.class, data, offset).getValue();
 
         // Assert
         assertNotNull(decoded.sequenceField);
@@ -102,7 +102,7 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
         int offset = 0;
 
         // Act
-        NestedStruct decoded = StructDecoder.decode(NestedStruct.class, data, offset);
+        NestedStruct decoded = StructDecoder.decode(NestedStruct.class, data, offset).getValue();
 
         // Assert
         assertNotNull(decoded.child);
@@ -129,7 +129,7 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
         int offset = 0;
 
         // Act
-        ComplexStruct decoded = StructDecoder.decode(ComplexStruct.class, data, offset);
+        ComplexStruct decoded = StructDecoder.decode(ComplexStruct.class, data, offset).getValue();
 
         // Assert: 필드별 디코딩 결과 확인
         assertEquals(128, decoded.uint8Field); // UINT8 Field
@@ -183,7 +183,7 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
     }
 
     // 테스트용 CustomLayoutField
-    public static class CustomStringField extends Field<String> {
+    public static class CustomStringField extends FieldBase<String> {
         public CustomStringField() { super(4); }
         @Override
         public byte[] encode(String value) { return value.getBytes(); }

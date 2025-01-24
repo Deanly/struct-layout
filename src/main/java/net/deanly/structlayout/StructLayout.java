@@ -1,5 +1,6 @@
 package net.deanly.structlayout;
 
+import net.deanly.structlayout.analysis.FieldDebugger;
 import net.deanly.structlayout.analysis.HexDumpUtil;
 import net.deanly.structlayout.codec.encode.StructEncoder;
 import net.deanly.structlayout.codec.decode.StructDecoder;
@@ -26,7 +27,7 @@ public class StructLayout {
      * @return The deserialized object.
      */
     public static <T> T decode(byte[] data, Class<T> type) {
-        return StructDecoder.decode(type, data, 0);
+        return StructDecoder.decode(type, data, 0).getValue();
     }
 
     /**
@@ -63,4 +64,41 @@ public class StructLayout {
             System.err.println("[Error encoding object: " + e.getMessage() + "]");
         }
     }
+
+    /**
+     * Debugs the object by encoding it and providing a breakdown of each field.
+     *
+     * @param obj The object to debug.
+     */
+    public static void debugWithFields(Object obj) {
+        if (obj == null) {
+            System.out.println("[Object is null]");
+            return;
+        }
+
+        try {
+            FieldDebugger.debugObjectFields(obj);
+        } catch (Exception e) {
+            System.err.println("[Field Debug Error: " + e.getMessage() + "]");
+        }
+    }
+
+//    /**
+//     * Debugs the given byte array by class structure and provides a breakdown of its fields.
+//     *
+//     * @param data  The serialized byte array to debug.
+//     * @param clazz The class type to decode.
+//     */
+//    public static void debugWithFields(byte[] data, Class<?> clazz) {
+//        if (data == null || data.length == 0) {
+//            System.out.println("[Empty byte array]");
+//            return;
+//        }
+//
+//        try {
+//            FieldDebugger.debugByteArrayWithFields(data, clazz);
+//        } catch (Exception e) {
+//            System.err.println("[Field Debug Error: " + e.getMessage() + "]");
+//        }
+//    }
 }

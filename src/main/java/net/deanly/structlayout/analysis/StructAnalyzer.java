@@ -4,7 +4,7 @@ import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.type.basic.CountableType;
+import net.deanly.structlayout.type.CountableField;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -69,7 +69,7 @@ public class StructAnalyzer {
         // Length bytes (if defined) add to the total size
         int totalSize = 0;
 
-        Class<? extends CountableType> lengthType = structSequenceField.lengthType();
+        Class<? extends CountableField> lengthType = structSequenceField.lengthType();
         if (lengthType != null) {
             @SuppressWarnings("unchecked")
             Field<?> lengthField = CachedLayoutProvider.getLayout((Class<? extends Field<?>>) lengthType);

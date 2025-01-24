@@ -1,11 +1,10 @@
 package net.deanly.structlayout;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.type.BasicTypes;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.basic.*;
 import org.junit.jupiter.api.Test;
 
@@ -91,7 +90,7 @@ public class BasicStructFieldTest {
         original.setStringValue("Hello, StructObject!");
         original.setFloatArray(new float[]{3.14f, 1.59f});
         original.setDoubleList(List.of(1.23, 4.56));
-        original.setCustomStruct(new CustomStruct(7, "NestedStructKey11111111111111111"));
+        original.setCustomStruct(new CustomStruct(7, new Key("NestedStructKey11111111111111111")));
 
         // Encode the object
         byte[] serializedData = StructLayout.encode(original);
@@ -168,7 +167,7 @@ public class BasicStructFieldTest {
         struct.setStringValue("Hello, StructObject!");
         struct.setFloatArray(new float[]{3.14f, 1.59f});
         struct.setDoubleList(List.of(1.23, 4.56));
-        struct.setCustomStruct(new CustomStruct(7L, "11111111111111111111111111111111"));
+        struct.setCustomStruct(new CustomStruct(7L, new Key("11111111111111111111111111111111")));
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
@@ -220,7 +219,7 @@ public class BasicStructFieldTest {
         @StructField(order = 4, type = StringCField.class)
         private String stringValue;
 
-        @StructSequenceField(order = 5, elementType = Float32LEField.class)
+        @StructSequenceField(order = 5, elementType = Float32LEField.class, lengthType = Int32LEField.class)
         private float[] floatArray;
 
         @StructSequenceField(order = 6, elementType = Float64BEField.class)
@@ -237,26 +236,26 @@ public class BasicStructFieldTest {
         private long id;
 
         @StructField(order = 2, type = KeyField.class)
-        private String key;
+        private Key key;
 
         public CustomStruct() {
         }
 
-        public CustomStruct(long id, String key) {
+        public CustomStruct(long id, Key key) {
             this.id = id;
             this.key = key;
         }
     }
 
-    public static class KeyField extends Field<String> {
+    public static class KeyField extends FieldBase<Key> {
         private static final int KEY_LENGTH = 32; // 32 bytes
         public KeyField() {
             super(KEY_LENGTH);
         }
 
         @Override
-        public byte[] encode(String value) {
-            byte[] byteValue = value.getBytes(StandardCharsets.UTF_8);
+        public byte[] encode(Key value) {
+            byte[] byteValue = value.getKey().getBytes(StandardCharsets.UTF_8);
             if (byteValue.length != KEY_LENGTH) {
                 throw new RuntimeException(
                         String.format(
@@ -270,7 +269,7 @@ public class BasicStructFieldTest {
         }
 
         @Override
-        public String decode(byte[] buffer, int offset) {
+        public Key decode(byte[] buffer, int offset) {
             if (buffer == null || buffer.length < offset + KEY_LENGTH) {
                 throw new RuntimeException(
                         String.format(
@@ -279,7 +278,15 @@ public class BasicStructFieldTest {
                         )
                 );
             }
-            return new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8);
+            return new Key(new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8));
         }
+    }
+
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    @RequiredArgsConstructor
+    public static class Key {
+        private final String key;
     }
 }

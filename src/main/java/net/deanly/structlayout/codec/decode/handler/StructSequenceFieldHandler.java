@@ -10,12 +10,12 @@ import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
-public class SequenceFieldHandler extends BaseFieldHandler {
+public class StructSequenceFieldHandler extends BaseFieldHandler {
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> int handleField(T instance, java.lang.reflect.Field field, byte[] data, int offset) throws IllegalAccessException {
-        // **1. 어노테이션 확인**
+        // 1. 어노테이션 확인
         StructSequenceField annotation = field.getAnnotation(StructSequenceField.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
@@ -23,16 +23,16 @@ public class SequenceFieldHandler extends BaseFieldHandler {
             );
         }
 
-        // **2. Layout 인스턴스 가져오기**
-        Field<?> lengthField = resolveLayout((Class<? extends Field<?>>) annotation.lengthType()); // 길이 타입 Layout
+        // 2. Layout 인스턴스 가져오기
+        Field<?> lengthField = resolveLayout(annotation.lengthType()); // 길이 타입 Layout
         Class<? extends Field<?>> elementFieldClass = annotation.elementType();
 
-        // **3. 길이 정보 디코딩**
+        // 3. 길이 정보 디코딩
         Object rawLengthValue = lengthField.decode(data, offset);
         int length = (int) TypeConverterHelper.convertToType(rawLengthValue, Integer.class);
         int currentOffset = offset + lengthField.getSpan();
 
-        // **4. 배열 또는 컬렉션 타입 확인**
+        // 4. 배열 또는 컬렉션 타입 확인
         Class<?> fieldType = field.getType();
         Object result;
         Class<?> elementType;
@@ -49,7 +49,7 @@ public class SequenceFieldHandler extends BaseFieldHandler {
             throw new InvalidSequenceTypeException(fieldType.getName(), fieldType, "Only Array or Collection types are allowed.");
         }
 
-        // **5. 개별 요소 디코드**
+        // 5. 개별 요소 디코드
         Field<Object> elementField;
         try {
             Field<?> elementFieldWildcard = elementFieldClass.getDeclaredConstructor().newInstance();
@@ -70,7 +70,7 @@ public class SequenceFieldHandler extends BaseFieldHandler {
             currentOffset += elementField.getSpan();
         }
 
-        // **6. 필드 값 설정**
+        // 6. 필드 값 설정
         field.setAccessible(true);
         field.set(instance, result);
 

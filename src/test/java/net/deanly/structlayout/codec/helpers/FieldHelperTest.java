@@ -1,10 +1,9 @@
 package net.deanly.structlayout.codec.helpers;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.type.BasicTypes;
 import net.deanly.structlayout.type.basic.Int16BEField;
 import net.deanly.structlayout.type.basic.Int16LEField;
 import net.deanly.structlayout.type.basic.Int32LEField;
@@ -37,7 +36,7 @@ class FieldHelperTest {
         private int nestedField;
     }
 
-    static class CustomField extends Field<String> {
+    static class CustomField extends FieldBase<String> {
         public CustomField(int span) {
             super(1);
         }

@@ -3,7 +3,9 @@ package net.deanly.structlayout.codec.helpers;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
+import net.deanly.structlayout.annotation.StructSequenceObjectField;
 import net.deanly.structlayout.exception.FieldOrderException;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.helpers.DataTypeHelper;
 
 import java.lang.reflect.Field;
@@ -31,7 +33,8 @@ public class FieldHelper {
         for (Field field : fields) {
             if (field.isAnnotationPresent(StructSequenceField.class) ||
                     field.isAnnotationPresent(StructObjectField.class) ||
-                    field.isAnnotationPresent(StructField.class)) {
+                    field.isAnnotationPresent(StructField.class) ||
+                    field.isAnnotationPresent(StructSequenceObjectField.class)) {
                 orderedFields.add(field);
             }
         }
@@ -60,6 +63,8 @@ public class FieldHelper {
             return field.getAnnotation(StructObjectField.class).order();
         } else if (field.isAnnotationPresent(StructField.class)) {
             return field.getAnnotation(StructField.class).order();
+        } else if (field.isAnnotationPresent(StructSequenceObjectField.class)) {
+            return field.getAnnotation(StructSequenceObjectField.class).order();
         }
         throw new FieldOrderException(field.getName());
     }
@@ -67,7 +72,7 @@ public class FieldHelper {
 
     public static boolean isFieldTypeApplicable(Class<?> structFieldType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
         // Field의 필드 타입 가져오기
-        Class<?> dataTypeFieldType = net.deanly.structlayout.Field.getGenericTypeAsObject(fieldType);
+        Class<?> dataTypeFieldType = FieldBase.getGenericTypeAsObject(fieldType);
 
         // 숫자형 변환 규칙 처리
         if (isNumericType(structFieldType) && isNumericType(dataTypeFieldType)) {
@@ -89,7 +94,7 @@ public class FieldHelper {
      * 기본 배열과 Field의 구성 요소 타입을 매칭합니다.
      */
     public static boolean isPrimitiveArrayApplicable(Class<?> componentType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
-        Class<?> expectedType = net.deanly.structlayout.Field.getGenericTypeAsObject(fieldType);
+        Class<?> expectedType = FieldBase.getGenericTypeAsObject(fieldType);
         if (componentType.isPrimitive()) {
             // 기본 타입 배열의 경우, 구성 요소 타입과 예상 타입 매칭
             if ((componentType == byte.class && expectedType == Byte.class) ||
@@ -108,7 +113,7 @@ public class FieldHelper {
      * 특정 요소 타입과 Field의 예상 타입 매칭.
      */
     public static boolean isApplicableToDataType(Class<?> elementType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
-        Class<?> expectedType = net.deanly.structlayout.Field.getGenericTypeAsObject(fieldType);
+        Class<?> expectedType = FieldBase.getGenericTypeAsObject(fieldType);
         return elementType.equals(expectedType);
     }
 

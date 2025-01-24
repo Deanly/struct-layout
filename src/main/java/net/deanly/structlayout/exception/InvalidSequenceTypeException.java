@@ -12,4 +12,7 @@ public class InvalidSequenceTypeException extends StructParsingException {
                 "Unsupported sequence type '%s' in field '%s'. %s",
                 fieldType.getName(), fieldName, message));
     }
+    public InvalidSequenceTypeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

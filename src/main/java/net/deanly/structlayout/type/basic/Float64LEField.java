@@ -1,8 +1,8 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 
-public class Float64LEField extends Field<Double> implements BasicType {
+public class Float64LEField extends FieldBase<Double> implements BasicType {
 
     /**
      * Constructs a layout for a 64-bit floating-point number in little-endian format.

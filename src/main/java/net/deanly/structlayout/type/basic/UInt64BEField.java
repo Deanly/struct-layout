@@ -1,10 +1,11 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
+import net.deanly.structlayout.type.CountableField;
 
 import java.math.BigInteger;
 
-public class UInt64BEField extends Field<BigInteger> implements CountableType {
+public class UInt64BEField extends FieldBase<BigInteger> implements CountableField<BigInteger> {
 
     private static final BigInteger UINT64_MAX = new BigInteger("18446744073709551615");
 

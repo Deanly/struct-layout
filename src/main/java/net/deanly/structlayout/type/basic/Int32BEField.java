@@ -1,8 +1,9 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
+import net.deanly.structlayout.type.CountableField;
 
-public class Int32BEField extends Field<Integer> implements CountableType {
+public class Int32BEField extends FieldBase<Integer> implements CountableField<Integer> {
 
     public Int32BEField(String property) {
         super(4, property); // 4 bytes

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 public class StructDecoder {
-    public static <T> T decode(Class<T> type, byte[] data, int startOffset) {
+    public static <T> StructDecodeResult<T> decode(Class<T> type, byte[] data, int startOffset) {
         if (startOffset < 0 || startOffset >= data.length) {
             throw new InvalidDataOffsetException(startOffset, data.length);
         }
@@ -28,6 +28,6 @@ public class StructDecoder {
             offset += FieldProcessor.processField(instance, field, data, offset);
         }
 
-        return instance;
+        return StructDecodeResult.of(instance, offset);
     }
 }

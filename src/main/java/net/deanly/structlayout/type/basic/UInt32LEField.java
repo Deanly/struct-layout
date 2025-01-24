@@ -1,8 +1,9 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
+import net.deanly.structlayout.type.CountableField;
 
-public class UInt32LEField extends Field<Long> implements CountableType {
+public class UInt32LEField extends FieldBase<Long> implements CountableField<Long> {
 
     public UInt32LEField(String property) {
         super(4, property); // 4 bytes

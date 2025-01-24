@@ -11,5 +11,12 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StructObjectField {
+    /**
+     * Specifies the order of a field within a structured object.
+     * The order determines the sequence in which the field will be
+     * processed during serialization or deserialization.
+     *
+     * @return the order of the field
+     */
     int order(); // Field order in the struct
 }

@@ -1,10 +1,10 @@
 package net.deanly.structlayout.codec.encode;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.analysis.CachedLayoutProvider;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.exception.*;
-import net.deanly.structlayout.type.BasicTypes;
 import net.deanly.structlayout.type.basic.Int16BEField;
 import net.deanly.structlayout.type.basic.Int16LEField;
 import net.deanly.structlayout.type.basic.Int32BEField;
@@ -37,7 +37,7 @@ class StructEncoderTest {
         public short field = 42;
     }
 
-    public static class MyCustomField extends Field<Long> {
+    public static class MyCustomField extends FieldBase<Long> {
         public MyCustomField() {
             super(8);
         }
@@ -107,7 +107,7 @@ class StructEncoderTest {
                 "Invalid sequence type should throw InvalidSequenceTypeException");
     }
 
-    public static class MyBrokenCustomField extends Field<Integer> {
+    public static class MyBrokenCustomField extends FieldBase<Integer> {
         public MyBrokenCustomField() {
             super(4);
         }
@@ -150,7 +150,7 @@ class StructEncoderTest {
     }
 
     // No-Argument 생성자가 없는 경우 (NoSuchMethodException 발생)
-    static class NoDefaultConstructorField extends Field<Integer> {
+    static class NoDefaultConstructorField extends FieldBase<Integer> {
         public NoDefaultConstructorField(String arg) { // 파라미터가 있는 생성자만 존재
             super(4);
         }
@@ -173,7 +173,7 @@ class StructEncoderTest {
                 "Should throw exception for a class without a no-arguments constructor");
     }
 
-    public static class PrivateConstructorField extends Field<Integer> {
+    public static class PrivateConstructorField extends FieldBase<Integer> {
         private PrivateConstructorField() { // private 생성자
             super(4);
         }
@@ -196,7 +196,7 @@ class StructEncoderTest {
     }
 
     // 내부 클래스이지만 static이 아닌 경우
-    public class NonStaticInnerField extends Field<Integer> { // static이 아님
+    public class NonStaticInnerField extends FieldBase<Integer> { // static이 아님
         public NonStaticInnerField() {
             super(4);
         }
@@ -223,7 +223,7 @@ class StructEncoderTest {
     }
 
     // 생성자 호출 자체에서 예외가 발생하는 경우 (InvocationTargetException 발생)
-    public static class ExceptionThrowingConstructorField extends Field<Integer> {
+    public static class ExceptionThrowingConstructorField extends FieldBase<Integer> {
         public ExceptionThrowingConstructorField() {
             super(4);
             throw new IllegalArgumentException("Simulating an error inside constructor");
@@ -254,7 +254,7 @@ class StructEncoderTest {
     }
 
     // 추상 클래스 (InstantiationException 발생)
-    public static abstract class AbstractField extends Field<Integer> {
+    public static abstract class AbstractField extends FieldBase<Integer> {
         public AbstractField() {
             super(4);
         }
@@ -281,7 +281,7 @@ class StructEncoderTest {
     }
 
     // 올바른 클래스가 정상적으로 생성되는지 확인
-    public static class ValidField extends Field<Integer> {
+    public static class ValidField extends FieldBase<Integer> {
         public ValidField() {
             super(4);
         }

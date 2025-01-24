@@ -1,8 +1,8 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 
-public class CharCField extends Field<Byte> implements BasicType {
+public class CharCField extends FieldBase<Byte> implements BasicType {
 
     public CharCField(String property) {
         super(1, property);

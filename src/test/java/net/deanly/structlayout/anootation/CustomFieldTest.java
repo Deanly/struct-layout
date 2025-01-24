@@ -2,7 +2,7 @@ package net.deanly.structlayout.anootation;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.StructLayout;
 import net.deanly.structlayout.annotation.StructField;
 import org.junit.jupiter.api.Test;
@@ -101,7 +101,7 @@ public class CustomFieldTest {
         assertNotEquals(validPublicKey, deserialized.getPublicKey(), "Decoded public key must match the original value");
     }
 
-    public static class PublicKeyField extends Field<String> {
+    public static class PublicKeyField extends FieldBase<String> {
 
         private static final int PUBLIC_KEY_LENGTH = 32; // 32 bytes
 

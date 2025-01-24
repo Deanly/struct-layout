@@ -5,4 +5,8 @@ public class InvalidDataOffsetException extends StructParsingException {
     public InvalidDataOffsetException(int offset, int dataLength) {
         super(String.format("Invalid offset '%d'. Exceeds the data length of '%d'. Ensure the data array and offset are valid.", offset, dataLength));
     }
+
+    public InvalidDataOffsetException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

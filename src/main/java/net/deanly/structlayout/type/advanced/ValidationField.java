@@ -1,8 +1,8 @@
 package net.deanly.structlayout.type.advanced;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 
-public abstract class ValidationField<T> extends Field<T> {
+public abstract class ValidationField<T> extends FieldBase<T> {
 
     public ValidationField(int span, String property) {
         super(span, property);

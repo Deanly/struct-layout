@@ -87,11 +87,23 @@ public class CachedLayoutProvider {
 
         Field<T> field = ClassFactory.createLayoutInstance(layoutClass);
 
-        if (DynamicSpanField.class.isAssignableFrom(layoutClass)) {
+        if (!DynamicSpanField.class.isAssignableFrom(layoutClass)) {
+            layoutCache.put(layoutClass, field);
+        } else if (isFinalSpanField(layoutClass)) {
             layoutCache.put(layoutClass, field);
         }
 
         return field;
+    }
+
+    private static boolean isFinalSpanField(Class<?> layoutClass) {
+        try {
+            java.lang.reflect.Field spanField = layoutClass.getDeclaredField("span");
+            int modifiers = spanField.getModifiers();
+            return java.lang.reflect.Modifier.isFinal(modifiers);
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
     }
 
 }

@@ -1,15 +1,16 @@
 package net.deanly.structlayout.type.advanced;
 
 import lombok.Getter;
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.DynamicSpanField;
 
 @Getter
-public class OffsetField<T> extends Field<T> implements DynamicSpanField {
-    private final Field<T> field;
+public class OffsetField<T> extends FieldBase<T> implements DynamicSpanField {
+    private final FieldBase<T> field;
     private final int offset;
+    private int span;
 
-    public OffsetField(Field<T> field, int offset, String property) {
+    public OffsetField(FieldBase<T> field, int offset, String property) {
         super(field instanceof DynamicSpanField ? -1 : field.getSpan(), property); // Dynamic Span 지원
         if (field == null) {
             throw new IllegalArgumentException("Base layout must not be null.");
@@ -23,6 +24,16 @@ public class OffsetField<T> extends Field<T> implements DynamicSpanField {
         return field instanceof DynamicSpanField
                 ? ((DynamicSpanField) field).calculateSpan(data, currentOffset + offset)
                 : field.getSpan();
+    }
+
+    @Override
+    public void setSpan(int span) {
+        this.span = span;
+    }
+
+    @Override
+    public int getSpan() {
+        return span;
     }
 
     @Override

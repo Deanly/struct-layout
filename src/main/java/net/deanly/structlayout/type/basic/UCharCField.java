@@ -1,8 +1,8 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 
-public class UCharCField extends Field<Integer> implements BasicType {
+public class UCharCField extends FieldBase<Integer> implements BasicType {
 
     public UCharCField(String property) {
         super(1, property);

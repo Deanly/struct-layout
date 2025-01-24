@@ -1,7 +1,9 @@
 package net.deanly.structlayout.codec.helpers;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.Field;
 import net.deanly.structlayout.exception.TypeConversionException;
+import net.deanly.structlayout.type.FieldBase;
 
 /**
  * Utility class for converting values of one type to another while supporting validation,
@@ -39,9 +41,9 @@ public class TypeConverterHelper {
      */
     public static Object convertToLayoutType(Object value, Class<? extends Field<?>> targetType) {
         if (value == null) {
-            return handleNullValue(Field.getGenericTypeAsObject(targetType));
+            return handleNullValue(FieldBase.getGenericTypeAsObject(targetType));
         }
-        return convertToType(value, Field.getGenericTypeAsObject(targetType));
+        return convertToType(value, FieldBase.getGenericTypeAsObject(targetType));
     }
 
     /**

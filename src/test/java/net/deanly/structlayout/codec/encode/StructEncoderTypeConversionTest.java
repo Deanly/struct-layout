@@ -1,6 +1,6 @@
 package net.deanly.structlayout.codec.encode;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.BasicTypes;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt8ToShortConversion() {
         // Arrange
-        Field<Short> field = createLayout(BasicTypes.UINT8);
+        FieldBase<Short> field = createLayout(BasicTypes.UINT8);
         short expectedValue = 255; // Max value for UINT8
         byte[] encoded = field.encode(expectedValue);
 
@@ -27,7 +27,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt16ToIntegerConversion() {
         // Arrange
-        Field<Integer> field = createLayout(BasicTypes.UINT16_BE);
+        FieldBase<Integer> field = createLayout(BasicTypes.UINT16_BE);
         int expectedValue = 65535; // Max value for UINT16
         byte[] encoded = field.encode(expectedValue);
 
@@ -41,7 +41,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt32ToLongConversion() {
         // Arrange
-        Field<Long> field = createLayout(BasicTypes.UINT32_LE);
+        FieldBase<Long> field = createLayout(BasicTypes.UINT32_LE);
         long expectedValue = 4294967295L; // Max value for UINT32
         byte[] encoded = field.encode(expectedValue);
 
@@ -55,7 +55,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt64ToBigIntegerConversion() {
         // Arrange
-        Field<BigInteger> field = createLayout(BasicTypes.UINT64_LE);
+        FieldBase<BigInteger> field = createLayout(BasicTypes.UINT64_LE);
         BigInteger expectedValue = new BigInteger("18446744073709551615"); // Max UINT64
         byte[] encoded = field.encode(expectedValue);
 
@@ -69,7 +69,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testFloat32ToFloatConversion() {
         // Arrange
-        Field<Float> field = createLayout(BasicTypes.FLOAT32_BE);
+        FieldBase<Float> field = createLayout(BasicTypes.FLOAT32_BE);
         float expectedValue = 3.14f;
         byte[] encoded = field.encode(expectedValue);
 
@@ -83,7 +83,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testFloat64ToDoubleConversion() {
         // Arrange
-        Field<Double> field = createLayout(BasicTypes.FLOAT64_LE);
+        FieldBase<Double> field = createLayout(BasicTypes.FLOAT64_LE);
         double expectedValue = 1234567.89;
         byte[] encoded = field.encode(expectedValue);
 
@@ -97,7 +97,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testInt64ToLongConversion() {
         // Arrange
-        Field<Long> field = createLayout(BasicTypes.INT64_LE);
+        FieldBase<Long> field = createLayout(BasicTypes.INT64_LE);
         long expectedValue = -1234567890123456789L; // Large signed 64-bit integer
         byte[] encoded = field.encode(expectedValue);
 
@@ -111,7 +111,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testStringCLayoutConversion() {
         // Arrange
-        Field<String> field = createLayout(BasicTypes.STRING_C);
+        FieldBase<String> field = createLayout(BasicTypes.STRING_C);
         String expectedValue = "Hello World!";
         byte[] encoded = field.encode(expectedValue);
 
@@ -125,7 +125,7 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testInvalidUInt8Conversion() {
         // Arrange
-        Field<Short> field = createLayout(BasicTypes.UINT8);
+        FieldBase<Short> field = createLayout(BasicTypes.UINT8);
 
         // Act & Assert
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -142,9 +142,9 @@ public class StructEncoderTypeConversionTest {
      * @return The Layout instance associated with the specified Field.
      */
     @SuppressWarnings("unchecked")
-    private <T> Field<T> createLayout(Class<? extends Field<?>> basicTypes) {
+    private <T> FieldBase<T> createLayout(Class<? extends FieldBase<?>> basicTypes) {
         try {
-            return (Field<T>) basicTypes.getDeclaredConstructor().newInstance();
+            return (FieldBase<T>) basicTypes.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Failed to create layout for Field: " + basicTypes, e);
         }

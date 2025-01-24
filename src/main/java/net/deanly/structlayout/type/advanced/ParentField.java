@@ -1,7 +1,7 @@
 package net.deanly.structlayout.type.advanced;
 
 import lombok.Getter;
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +16,8 @@ import java.util.List;
  * @param <T> The type of the value handled by this ParentLayout.
  */
 @Getter
-public abstract class ParentField<T> extends Field<T> {
-    private final List<Field<?>> childFields = new ArrayList<>(); // 하위 레이아웃들
+public abstract class ParentField<T> extends FieldBase<T> {
+    private final List<FieldBase<?>> childFields = new ArrayList<>(); // 하위 레이아웃들
 
     /**
      * Constructs a ParentLayout with a specified span and property.
@@ -39,7 +39,7 @@ public abstract class ParentField<T> extends Field<T> {
      *               of the generic Layout class and may define its specific
      *               encoding and decoding logic.
      */
-    public void addChild(Field<?> field) {
+    public void addChild(FieldBase<?> field) {
         childFields.add(field);
     }
 
@@ -50,5 +50,5 @@ public abstract class ParentField<T> extends Field<T> {
      *              This layout must be a part of the parent layout's collection of child layouts.
      * @return A byte array representing the data associated with the specified child layout.
      */
-    public abstract byte[] getDataForChild(Field<?> child);
+    public abstract byte[] getDataForChild(FieldBase<?> child);
 }

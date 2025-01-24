@@ -1,14 +1,12 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 
 /**
  * Represents a layout for encoding and decoding a single byte value.
  * This layout operates on 1-byte values, maintaining their signed representation.
  */
-public class ByteField extends Field<Byte> implements BasicType {
-    public static final Class<Byte> GENETIC_CLASS = Byte.class;
-
+public class ByteField extends FieldBase<Byte> implements BasicType {
     public ByteField(String property) {
         super(1, property); // 1 바이트
     }

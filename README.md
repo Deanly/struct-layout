@@ -65,7 +65,7 @@ Define a Java class to represent the layout of structured binary data. Add `Stru
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.annotation.StructField;
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.Field;
 
 // Define your Struct class
 class SimpleStruct {
@@ -81,7 +81,7 @@ class SimpleStruct {
     @StructField(order = 4, type = StringCField.class)
     private String stringValue;
 
-    @StructSequenceField(order = 5, elementType = Float32LEField.class)
+    @StructSequenceField(order = 5, elementType = Float32LEField.class, lengthType = Int32LEField.class)
     private float[] floatArray;
 
     @StructSequenceField(order = 6, elementType = Float64BEField.class)
@@ -100,8 +100,7 @@ class CustomStruct {
     @StructField(order = 2, type = KeyField.class)
     private String key;
 
-    public CustomStruct() {
-    }
+    public CustomStruct() { }
     public CustomStruct(long id, String name) {
         this.id = id;
         this.name = name;
@@ -110,15 +109,18 @@ class CustomStruct {
     // Getter and Setter...
 }
 
-public static class KeyField extends Field<String> {
+public static class KeyField implements Field<Key> {
     private static final int KEY_LENGTH = 32; // 32 bytes
-    public KeyField() {
-        super(KEY_LENGTH); // Defines a fixed byte size for the inherited field to handle static-sized binary data
+    public KeyField() { }
+    
+    @Override
+    public int getSpan() {
+        return KEY_LENGTH;
     }
 
     @Override
-    public byte[] encode(String value) {
-        byte[] byteValue = value.getBytes(StandardCharsets.UTF_8);
+    public byte[] encode(Key value) {
+        byte[] byteValue = value.getKey().getBytes(StandardCharsets.UTF_8);
         if (byteValue.length != KEY_LENGTH) {
             throw new RuntimeException(String.format("Invalid KeyField length: expected %d bytes but was %d bytes.", KEY_LENGTH, byteValue.length));
         }
@@ -126,11 +128,20 @@ public static class KeyField extends Field<String> {
     }
 
     @Override
-    public String decode(byte[] buffer, int offset) {
+    public Key decode(byte[] buffer, int offset) {
         if (buffer == null || buffer.length < offset + KEY_LENGTH) {
             throw new RuntimeException(String.format("Invalid buffer length for KeyField decoding. Expected at least %d bytes from offset %d.", KEY_LENGTH, offset));
         }
-        return new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8);
+        return new Key(new String(buffer, offset, KEY_LENGTH, StandardCharsets.UTF_8));
+    }
+}
+
+public static class Key {
+    private final String key;
+    public Key(String key) { this.key = key; }
+    
+    public String getKey() {
+        return key;
     }
 }
 ```
@@ -198,11 +209,11 @@ Example Output:
 Debug Serialized Data:
 00000000: 2a 00 00 00 00 00 00 2a 66 e6 f6 42 48 65 6c 6c   *......*f..BHell
 00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
-00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 00 00   .......H@...?...
-00000030: 00 3f f3 ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a   .?...z.G.@.=p...
-00000040: 3d 07 00 00 00 31 31 31 31 31 31 31 31 31 31 31   =....11111111111
+00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 3f f3   .......H@...?.?.
+00000030: ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a 3d 07 00   ..z.G.@.=p...=..
+00000040: 00 00 31 31 31 31 31 31 31 31 31 31 31 31 31 31   ..11111111111111
 00000050: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
-00000060: 31 31 31 31 31                                    11111
+00000060: 31 31                                             11
 
 Decoded Struct:
 Int32 Value (Little-Endian): 42
@@ -213,16 +224,18 @@ Float Array: 3.14 1.59
 Double List: 1.23 4.56 
 Custom Struct:
   ID: 7
-  Key: 11111111111111111111111111111111
-  
+  Key: Key(key=11111111111111111111111111111111)
+
 Debug Decoded Struct:
 00000000: 2a 00 00 00 00 00 00 2a 66 e6 f6 42 48 65 6c 6c   *......*f..BHell
 00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
-00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 00 00   .......H@...?...
-00000030: 00 3f f3 ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a   .?...z.G.@.=p...
-00000040: 3d 07 00 00 00 31 31 31 31 31 31 31 31 31 31 31   =....11111111111
+00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 3f f3   .......H@...?.?.
+00000030: ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a 3d 07 00   ..z.G.@.=p...=..
+00000040: 00 00 31 31 31 31 31 31 31 31 31 31 31 31 31 31   ..11111111111111
 00000050: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
-00000060: 31 31 31 31 31                                    11111
+00000060: 31 31                                             11
+
+
 ```
 ---
 

@@ -1,6 +1,6 @@
 package net.deanly.structlayout.codec.helpers;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.exception.TypeConversionException;
 import net.deanly.structlayout.type.BasicTypes;
 import org.junit.jupiter.api.Test;
@@ -112,7 +112,7 @@ public class TypeConverterHelperTest {
     @Test
     public void testConvertToLayoutType_WithValidDataType() {
         // Mocked Field
-        Class<? extends Field<?>> basicTypes = BasicTypes.INT32_LE;
+        Class<? extends FieldBase<?>> basicTypes = BasicTypes.INT32_LE;
 
         assertEquals(123, TypeConverterHelper.convertToLayoutType("123", basicTypes));
         assertEquals(0, TypeConverterHelper.convertToLayoutType(null, basicTypes));
@@ -121,7 +121,7 @@ public class TypeConverterHelperTest {
     @Test
     public void testConvertToLayoutType_InvalidConversion() {
         // Mocked Field
-        Class<? extends Field<?>> basicTypes = BasicTypes.INT32_BE;
+        Class<? extends FieldBase<?>> basicTypes = BasicTypes.INT32_BE;
 
         Exception exception = assertThrows(TypeConversionException.class, () ->
                 TypeConverterHelper.convertToLayoutType("Not a number", basicTypes));

@@ -25,7 +25,7 @@ public class StructObjectFieldHandler extends BaseFieldHandler {
 
         Class<?> nestedType = field.getType();
 
-        Object nestedInstance = StructDecoder.decode(nestedType, data, offset);
+        Object nestedInstance = StructDecoder.decode(nestedType, data, offset).getValue();
 
         field.setAccessible(true);
         field.set(instance, nestedInstance);

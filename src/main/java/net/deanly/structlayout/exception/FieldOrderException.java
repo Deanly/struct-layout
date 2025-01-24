@@ -7,4 +7,7 @@ public class FieldOrderException extends StructParsingException {
                 "Field '%s' does not define a valid 'order'. Please specify a proper 'order' value.",
                 fieldName));
     }
+    public FieldOrderException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

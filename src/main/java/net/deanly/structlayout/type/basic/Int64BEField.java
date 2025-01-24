@@ -1,8 +1,9 @@
 package net.deanly.structlayout.type.basic;
 
-import net.deanly.structlayout.Field;
+import net.deanly.structlayout.type.FieldBase;
+import net.deanly.structlayout.type.CountableField;
 
-public class Int64BEField extends Field<Long> implements CountableType {
+public class Int64BEField extends FieldBase<Long> implements CountableField<Long> {
 
     private static final long MAX_SAFE_INTEGER = 1L << 52; // 2^52
     private static final long UINT32_MASK = 0xFFFFFFFFL;

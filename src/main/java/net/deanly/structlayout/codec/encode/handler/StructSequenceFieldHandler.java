@@ -6,27 +6,27 @@ import net.deanly.structlayout.exception.InvalidSequenceTypeException;
 import net.deanly.structlayout.exception.LayoutInitializationException;
 import net.deanly.structlayout.codec.helpers.ByteArrayHelper;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
-import net.deanly.structlayout.type.basic.CountableType;
+import net.deanly.structlayout.type.CountableField;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SequenceFieldHandler extends BaseFieldHandler {
+public class StructSequenceFieldHandler extends BaseFieldHandler {
 
     @Override
     public <T> byte[] handleField(T instance, java.lang.reflect.Field field) throws IllegalAccessException {
-        // 1. 필드 값 추출
-        Object arrayOrList = extractFieldValue(instance, field);
-
-        // 2. @StructSequenceField 어노테이션 가져오기
+        // 1. @StructSequenceField 어노테이션 가져오기
         StructSequenceField annotation = field.getAnnotation(StructSequenceField.class);
         if (annotation == null) {
             throw new InvalidSequenceTypeException(field.getName(), field.getType());
         }
 
+        // 2. 필드 값 추출
+        Object arrayOrList = extractFieldValue(instance, field);
+
         // 3. 길이 및 요소 타입 메타데이터 조회
-        Class<? extends CountableType> lengthType = annotation.lengthType();
+        Class<? extends CountableField<?>> lengthType = annotation.lengthType();
         Class<? extends Field<?>> elementFieldType = annotation.elementType();
 
         // 4. Null 처리: 빈 배열로 대체
@@ -63,15 +63,14 @@ public class SequenceFieldHandler extends BaseFieldHandler {
     private byte[] encodeLengthAndElements(
             int length,
             List<Object> elements,
-            Class<? extends CountableType> lengthType,
+            Class<? extends CountableField<?>> lengthType,
             Class<? extends Field<?>> elementFieldType
     ) {
         List<byte[]> encodedChunks = new ArrayList<>();
         try {
             // 길이 인코딩
-            Class<? extends Field<?>> lengthType2 = (Class<? extends Field<?>>) lengthType;
-            Field<Object> lengthField = resolveLayout(lengthType2);
-            Object convertedLength = TypeConverterHelper.convertToLayoutType(length, lengthType2);
+            Field<Object> lengthField = resolveLayout(lengthType);
+            Object convertedLength = TypeConverterHelper.convertToLayoutType(length, lengthType);
             encodedChunks.add(lengthField.encode(convertedLength));
 
             // 요소 인코딩
