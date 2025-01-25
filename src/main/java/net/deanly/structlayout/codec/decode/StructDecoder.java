@@ -15,19 +15,20 @@ public class StructDecoder {
             throw new InvalidDataOffsetException(startOffset, data.length);
         }
 
-        // 1. 인스턴스 생성
+        // 1. 디코딩할 객체의 인스턴스 생성
         T instance = ClassFactory.createNoArgumentsInstance(type);
 
-        // 2. 필드 정렬
-        Field[] fields = type.getDeclaredFields();
-        List<Field> orderedFields = FieldHelper.getOrderedFields(fields);
+        // 2. 상속 계층의 모든 필드 수집 및 정렬
+        List<Field> allFields = FieldHelper.getAllDeclaredFieldsIncludingSuperclasses(type);
+        List<Field> orderedFields = FieldHelper.getOrderedFields(allFields);
 
-        // 3. 디코딩 처리
+        // 3. 디코딩: 필드 순서대로 Byte 데이터를 객체 필드에 매핑
         int offset = startOffset;
         for (Field field : orderedFields) {
             offset += FieldProcessor.processField(instance, field, data, offset);
         }
 
+        // 4. 디코딩 결과 반환
         return StructDecodeResult.of(instance, offset - startOffset);
     }
 }

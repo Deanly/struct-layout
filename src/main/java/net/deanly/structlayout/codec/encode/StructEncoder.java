@@ -15,11 +15,13 @@ public class StructEncoder {
             return new byte[0]; // Null 객체는 빈 배열 반환
         }
 
-        // 1. 필드 정렬
-        Field[] fields = instance.getClass().getDeclaredFields();
-        List<Field> orderedFields = FieldHelper.getOrderedFields(fields);
+        // 1. 상속 계층 필드 가져오기
+        List<Field> allFields = getAllDeclaredFields(instance.getClass());
 
-        // 2. 필드 별 byte[] 처리
+        // 2. 필드 정렬
+        List<Field> orderedFields = FieldHelper.getOrderedFields(allFields);
+
+        // 3. 필드 처리 및 병합
         List<byte[]> fieldChunks = new ArrayList<>();
         for (Field field : orderedFields) {
             field.setAccessible(true);
@@ -27,8 +29,25 @@ public class StructEncoder {
             fieldChunks.add(chunk);
         }
 
-        // 3. 생성된 byte[] 병합 및 반환
+        // 4. 병합된 결과 반환
         return ByteArrayHelper.mergeChunks(fieldChunks);
+    }
+
+    /**
+     * 상속 계층의 모든 필드를 가져오는 메서드
+     */
+    private static List<Field> getAllDeclaredFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        while (clazz != null && clazz != Object.class) {
+            Field[] declaredFields = clazz.getDeclaredFields();
+            for (Field field : declaredFields) {
+                if (FieldHelper.isStructField(field)) { // `@Struct*` 관련 필드만 필터링
+                    fields.add(field);
+                }
+            }
+            clazz = clazz.getSuperclass(); // 부모 클래스로 이동
+        }
+        return fields;
     }
 
 
@@ -37,16 +56,24 @@ public class StructEncoder {
             return;
         }
 
-        Field[] fields = instance.getClass().getDeclaredFields();
-        List<Field> orderedFields = FieldHelper.getOrderedFields(fields);
+        // 1. 상속 계층 필드 가져오기
+        List<Field> allFields = getAllDeclaredFields(instance.getClass());
 
+        // 2. 필드 정렬
+        List<Field> orderedFields = FieldHelper.getOrderedFields(allFields);
+
+        // 3. Debug 정보를 생성
         List<FieldDebugInfo> debugInfos = new ArrayList<>();
-
         for (Field field : orderedFields) {
             field.setAccessible(true);
             debugInfos.addAll(FieldProcessor.processFieldRecursivelyWithDebug(instance, field, null));
         }
 
+        // 4. Debug 출력
+        printDebugInfo(debugInfos);
+    }
+
+    private static void printDebugInfo(List<FieldDebugInfo> debugInfos) {
         int offset = 0;
         int totalBytes = 0;
 

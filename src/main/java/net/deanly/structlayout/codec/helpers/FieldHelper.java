@@ -43,6 +43,33 @@ public class FieldHelper {
     }
 
     /**
+     * Returns a list of fields from the given array that are annotated with specific annotations
+     * and orders them according to the order value defined in their annotations.
+     *
+     * The supported annotations are:
+     * - {@code StructSequenceField}
+     * - {@code StructObjectField}
+     * - {@code StructField}
+     * - {@code StructSequenceObjectField}
+     *
+     * @param fields the list of fields to be filtered and ordered
+     * @return a list of fields annotated with the supported annotations, ordered by their `order` value
+     */
+    public static List<Field> getOrderedFields(List<Field> fields) {
+        List<Field> orderedFields = new ArrayList<>();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(StructSequenceField.class) ||
+                    field.isAnnotationPresent(StructObjectField.class) ||
+                    field.isAnnotationPresent(StructField.class) ||
+                    field.isAnnotationPresent(StructSequenceObjectField.class)) {
+                orderedFields.add(field);
+            }
+        }
+        orderedFields.sort(Comparator.comparingInt(FieldHelper::getOrderValue));
+        return orderedFields;
+    }
+
+    /**
      * Retrieves the order value of the given field based on its annotation.
      * The method checks for specific annotations in the following order:
      * - StructField
@@ -69,6 +96,47 @@ public class FieldHelper {
         throw new FieldOrderException(field.getName());
     }
 
+    /**
+     * Checks if the given {@code Field} is annotated with any of the supported
+     * struct-related annotations: {@code StructField}, {@code StructSequenceField},
+     * {@code StructObjectField}, or {@code StructSequenceObjectField}.
+     *
+     * @param field the {@code Field} to be checked for struct-related annotations
+     * @return {@code true} if the field is annotated with one of the supported
+     *         struct-related annotations; {@code false} otherwise
+     */
+    public static boolean isStructField(Field field) {
+        return field.isAnnotationPresent(StructField.class)
+                || field.isAnnotationPresent(StructSequenceField.class)
+                || field.isAnnotationPresent(StructObjectField.class)
+                || field.isAnnotationPresent(StructSequenceObjectField.class);
+    }
+
+    /**
+     * Retrieves all declared fields from the specified class and its superclasses,
+     * filtering only those annotated with struct-related annotations.
+     *
+     * The method iterates through the class hierarchy, starting from the given
+     * class and moving up to its superclasses, excluding {@code Object.class}.
+     * For each class, it collects declared fields that satisfy the given filter criteria.
+     *
+     * @param clazz the class to inspect for declared fields, including fields
+     *              from its superclasses
+     * @return a list of fields that are declared in the class and its superclasses,
+     *         and are annotated with struct-related annotations
+     */
+    public static List<Field> getAllDeclaredFieldsIncludingSuperclasses(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        while (clazz != null && clazz != Object.class) {
+            for (Field field : clazz.getDeclaredFields()) {
+                if (isStructField(field)) { // `@Struct*` 어노테이션 필터링
+                    fields.add(field);
+                }
+            }
+            clazz = clazz.getSuperclass(); // 부모 클래스로 이동
+        }
+        return fields;
+    }
 
     public static boolean isFieldTypeApplicable(Class<?> structFieldType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
         // Field의 필드 타입 가져오기
