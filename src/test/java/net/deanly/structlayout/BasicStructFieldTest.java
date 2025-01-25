@@ -4,6 +4,7 @@ import lombok.*;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
+import net.deanly.structlayout.annotation.StructSequenceObjectField;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.basic.*;
 import org.junit.jupiter.api.Test;
@@ -75,8 +76,7 @@ public class BasicStructFieldTest {
         System.out.println("Float Value: " + decodedStruct.getFloatValue());
 
         // Debugging a byte array
-        StructLayout.debug(serializedData);
-        // 00000000: 2a 00 00 00 c3 f5 48 40 03 00 00 00 01 02 03      *.....H@.......
+        StructLayout.debugWithFields(decodedStruct);
     }
 
     @Test
@@ -168,6 +168,10 @@ public class BasicStructFieldTest {
         struct.setFloatArray(new float[]{3.14f, 1.59f});
         struct.setDoubleList(List.of(1.23, 4.56));
         struct.setCustomStruct(new CustomStruct(7L, new Key("11111111111111111111111111111111")));
+        struct.setCustomStructList(List.of(
+                new CustomStruct(10000L, new Key("11111111111111111111111111111111")),
+                new CustomStruct(80000L, new Key("11111111111111111111111111111111"))
+        ));
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
@@ -202,6 +206,9 @@ public class BasicStructFieldTest {
         // Debug the decoded struct
         System.out.println("Debug Decoded Struct:");
         StructLayout.debug(decodedStruct);
+
+        System.out.println("Debug with Field:");
+        StructLayout.debugWithFields(decodedStruct);
     }
 
     @Getter
@@ -227,6 +234,11 @@ public class BasicStructFieldTest {
 
         @StructObjectField(order = 7)
         private CustomStruct customStruct;
+
+        @StructSequenceObjectField(order = 8, lengthType = Int16LEField.class)
+        private List<CustomStruct> customStructList;
+
+        private CustomStruct[] test;
     }
 
     @Getter

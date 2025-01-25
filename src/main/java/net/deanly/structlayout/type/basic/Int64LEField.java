@@ -5,9 +5,6 @@ import net.deanly.structlayout.type.CountableField;
 
 public class Int64LEField extends FieldBase<Long> implements CountableField<Long> {
 
-    private static final long MAX_SAFE_INTEGER = 1L << 52; // 2^52
-    private static final long UINT32_MASK = 0xFFFFFFFFL;
-
     /**
      * Constructs a Int64 layout for signed 64-bit integers in little-endian format.
      *
@@ -51,14 +48,7 @@ public class Int64LEField extends FieldBase<Long> implements CountableField<Long
                         ((long)(data[offset + 7] & 0xFF) << 24); // High 32 bits (signed)
 
         // Combine into a signed 64-bit integer
-        long result = (hi32 << 32) | lo32;
-
-        // Warning if magnitude exceeds the JavaScript safe integer limit
-        if (Math.abs(result) > MAX_SAFE_INTEGER) {
-            System.out.println("Warning: The value exceeds JavaScript's maximum safe integer representation (2^52).");
-        }
-
-        return result;
+        return (hi32 << 32) | lo32;
     }
 
     /**

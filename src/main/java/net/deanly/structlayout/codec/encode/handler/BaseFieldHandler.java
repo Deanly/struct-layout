@@ -2,8 +2,11 @@ package net.deanly.structlayout.codec.encode.handler;
 
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.CachedLayoutProvider;
+import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.type.FieldBase;
+
+import java.util.List;
 
 public abstract class BaseFieldHandler {
 
@@ -18,6 +21,16 @@ public abstract class BaseFieldHandler {
      */
     protected Field<Object> resolveLayout(Class<? extends Field<?>> basicType) {
         return CachedLayoutProvider.getLayout(basicType);
+    }
+
+    /**
+     * Encodes an element into a byte array by converting it to its layout-specific type
+     * and using the corresponding Field implementation to encode it.
+     */
+    protected byte[] encodeElement(Class<? extends Field<?>> elementFieldType, Object element) {
+        Field<Object> elementField = CachedLayoutProvider.getLayout(elementFieldType);
+        Object convertedElement = TypeConverterHelper.convertToLayoutType(element, elementFieldType);
+        return elementField.encode(convertedElement);
     }
 
     /**
@@ -51,4 +64,12 @@ public abstract class BaseFieldHandler {
         }
         throw new IllegalArgumentException("Field value cannot be null for Field: " + basicType);
     }
+
+    /**
+     * Generates debug information for a specific field in the given instance.
+     * The method collects details such as field order, encoded bytes, and metadata relevant to the field
+     * for debugging purposes.
+     */
+    public abstract <T> List<FieldDebugInfo.Builder> handleDebug(T instance, java.lang.reflect.Field field) throws IllegalAccessException;
+
 }

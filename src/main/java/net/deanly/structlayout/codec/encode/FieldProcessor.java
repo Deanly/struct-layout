@@ -1,15 +1,17 @@
 package net.deanly.structlayout.codec.encode;
 
+import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.codec.encode.handler.*;
+import net.deanly.structlayout.codec.helpers.FieldHelper;
 import net.deanly.structlayout.exception.FieldAccessException;
 import net.deanly.structlayout.exception.StructParsingException;
 import net.deanly.structlayout.exception.TypeConversionException;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FieldProcessor {
 
@@ -42,4 +44,55 @@ public class FieldProcessor {
         }
         throw new IllegalArgumentException("No handler found for field: `" + field.getName() + "`");
     }
+
+    public static <T> List<FieldDebugInfo> processFieldRecursivelyWithDebug(T instance, Field field, String parentOrder) {
+        List<FieldDebugInfo> debugInfos = new ArrayList<>();
+
+        for (Map.Entry<Class<? extends Annotation>, BaseFieldHandler> entry : HANDLERS.entrySet()) {
+            if (field.isAnnotationPresent(entry.getKey())) {
+                try {
+                    String order = parentOrder == null ? String.valueOf(FieldHelper.getOrderValue(field)) : parentOrder + "-" + FieldHelper.getOrderValue(field);
+
+                    if (field.isAnnotationPresent(StructObjectField.class)) {
+                        Object childInstance = field.get(instance);
+                        if (childInstance != null) {
+                            Field[] childFields = childInstance.getClass().getDeclaredFields();
+                            for (Field childField : childFields) {
+                                childField.setAccessible(true);
+                                debugInfos.addAll(processFieldRecursivelyWithDebug(childInstance, childField, order));
+                            }
+                        }
+                    }
+                    else if (field.isAnnotationPresent(StructSequenceObjectField.class)) {
+                        List<FieldDebugInfo.Builder> builders = entry.getValue().handleDebug(instance, field);
+
+                        for (FieldDebugInfo.Builder builder : builders) {
+                            builder.order(order);
+                            debugInfos.add(builder.build());
+                        }
+                    }
+                    else if (field.isAnnotationPresent(StructSequenceField.class)) {
+                        List<FieldDebugInfo.Builder> builders = entry.getValue().handleDebug(instance, field);
+                        for (FieldDebugInfo.Builder builder : builders) {
+                            builder.order(order);
+                            debugInfos.add(builder.build());
+                        }
+                    }
+                    else if (field.isAnnotationPresent(StructField.class))  {
+                        FieldDebugInfo.Builder builder = entry.getValue().handleDebug(instance, field).get(0);
+                        builder.order(order);
+                        debugInfos.add(builder.build());
+                    }
+                    return debugInfos;
+                } catch (Exception e) {
+                    throw new RuntimeException(
+                            "Failed to debug field: `" + field.getName() + "` -> " + e.getMessage(), e
+                    );
+                }
+            }
+        }
+
+        return debugInfos;
+    }
+
 }

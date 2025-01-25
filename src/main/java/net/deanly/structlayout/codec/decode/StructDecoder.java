@@ -28,6 +28,6 @@ public class StructDecoder {
             offset += FieldProcessor.processField(instance, field, data, offset);
         }
 
-        return StructDecodeResult.of(instance, offset);
+        return StructDecodeResult.of(instance, offset - startOffset);
     }
 }

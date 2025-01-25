@@ -1,9 +1,11 @@
 package net.deanly.structlayout.codec.encode.handler;
 
+import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.codec.encode.StructEncoder;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 public class StructObjectFieldHandler extends BaseFieldHandler {
     @Override
@@ -26,5 +28,10 @@ public class StructObjectFieldHandler extends BaseFieldHandler {
 
         // 4. StructEncoder를 사용하여 재귀적으로 인코딩 처리
         return StructEncoder.encode(fieldValue);
+    }
+
+    @Override
+    public <T> List<FieldDebugInfo.Builder> handleDebug(T instance, Field field) throws IllegalAccessException {
+        return List.of();
     }
 }

@@ -77,7 +77,7 @@ public class StructLayout {
         }
 
         try {
-            FieldDebugger.debugObjectFields(obj);
+            StructEncoder.encodeWithDebug(obj);
         } catch (Exception e) {
             System.err.println("[Field Debug Error: " + e.getMessage() + "]");
         }

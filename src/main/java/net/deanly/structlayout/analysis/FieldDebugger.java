@@ -1,81 +1,75 @@
 package net.deanly.structlayout.analysis;
 
-import net.deanly.structlayout.codec.decode.StructDecoder;
-import net.deanly.structlayout.codec.encode.FieldProcessor;
-import net.deanly.structlayout.codec.helpers.FieldHelper;
-import net.deanly.structlayout.exception.StructParsingException;
-
+import net.deanly.structlayout.annotation.StructField;
+import net.deanly.structlayout.annotation.StructSequenceField;
+import net.deanly.structlayout.annotation.StructObjectField;
+import net.deanly.structlayout.type.FieldBase;
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Collection;
 
 public class FieldDebugger {
 
-    public static void debugObjectFields(Object obj) {
-        Class<?> clazz = obj.getClass();
-        System.out.println("[Debug Object Fields: " + clazz.getSimpleName() + "]");
+    public static void debugWithFields(Object struct) throws IllegalAccessException {
+        if (struct == null) {
+            System.out.println("[Object is null]");
+            return;
+        }
 
-        // 1. 객체의 모든 필드 가져오기
+        Class<?> clazz = struct.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        List<Field> orderedFields = FieldHelper.getOrderedFields(fields);
 
-        for (Field field : orderedFields) {
-            field.setAccessible(true);
-            try {
-                // 필드 값 인코딩
-                byte[] encodedData = FieldProcessor.processField(obj, field);
+        System.out.println("[Debugging Struct Fields: " + clazz.getSimpleName() + "]");
 
-                // 필드 디버깅 정보 출력
-                System.out.println("  Field: " + field.getName());
-                System.out.println("  Type:  " + field.getType().getSimpleName());
-                System.out.println("  Data:  \n" + HexDumpUtil.toHexDump(encodedData));
-            } catch (Exception e) {
-                System.err.println("  [Error processing field: " + field.getName() + "] " + e.getMessage());
+        for (Field field : fields) {
+            field.setAccessible(true); // Private 필드 접근 가능하게 설정
+
+            // 필드 값 가져오기
+            Object value = field.get(struct);
+
+            if (value == null) {
+                System.out.println("Field: " + field.getName() + " = null");
+                continue;
+            }
+
+            // StructField와 StructSequenceField 등이 있는 필드에 대한 처리
+            if (field.isAnnotationPresent(StructField.class) ||
+                    field.isAnnotationPresent(StructSequenceField.class) ||
+                    field.isAnnotationPresent(StructObjectField.class)) {
+
+                System.out.println("Field: " + field.getName() + " -> " + value.getClass().getSimpleName());
+
+                // FieldBase 타입일 경우
+                if (FieldBase.class.isAssignableFrom(value.getClass())) {
+                    debugFieldBase((FieldBase<?>) value, field);
+                }
+                // 배열 혹은 Collection 처리
+                else if (Collection.class.isAssignableFrom(value.getClass())) {
+                    debugCollectionField((Collection<?>) value, field);
+                }
+                // 다른 재귀적으로 평가 가능한 Struct 처리
+                else {
+                    debugWithFields(value);
+                }
             }
         }
     }
 
+    private static void debugFieldBase(FieldBase<?> fieldBase, Field field) {
+        System.out.println("  [FieldBase Debug]");
+        System.out.println("  Field: " + field.getName());
+        System.out.println("  Type: " + fieldBase.getClass().getSimpleName());
+        System.out.println("  HEX Debug: " + fieldBase.bytesToHex(new byte[fieldBase.getSpan()])); // 샘플
+    }
 
-//    public static <T> void debugByteArrayWithFields(byte[] data, Class<T> clazz) {
-//        System.out.println("[Debug Byte Array With Fields: " + clazz.getSimpleName() + "]");
-//
-//        try {
-//            // 1. 클래스 필드 정렬
-//            Field[] fields = clazz.getDeclaredFields();
-//            List<Field> orderedFields = FieldHelper.getOrderedFields(fields);
-//
-//            int offset = 0; // 데이터를 읽을 오프셋 초기화
-//
-//            // 2. 각 필드 처리
-//            for (Field field : orderedFields) {
-//                field.setAccessible(true);
-//
-//                try {
-//                    // 2.1 필드에 할당된 데이터를 디코딩
-//                    Object fieldValue = StructDecoder.decode(field.getClass(), data, offset);
-//                    int fieldSize = FieldDecoder.getFieldSpan(data, offset, field);
-//
-//                    // 2.2 필드 정보 출력
-//                    System.out.println("  Field: " + field.getName());
-//                    System.out.println("  Type:  " + field.getType().getSimpleName());
-//                    System.out.println("  Data:  " + HexDumpUtil.toHexDump(data, offset, fieldSize));
-//                    System.out.println();
-//
-//                    // 2.3 다음 필드로 오프셋 이동
-//                    offset += fieldSize;
-//                } catch (Exception e) {
-//                    System.err.println("  [Error processing field: " + field.getName() + "] " + e.getMessage());
-//                }
-//            }
-//
-//            // 3. 데이터가 남아있는 상태이면 경고 출력
-//            if (offset < data.length) {
-//                System.out.println("[Warning] Not all data was consumed during decoding. Remaining data:");
-//                System.out.println(HexDumpUtil.toHexDump(data, offset, data.length - offset));
-//            }
-//        } catch (StructParsingException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new StructParsingException("Failed to debug byte array fields for class: " + clazz.getName(), e);
-//        }
-//    }
+    private static void debugCollectionField(Collection<?> collection, Field field) throws IllegalAccessException {
+        System.out.println("  [SequenceField Debug]");
+        System.out.println("  Field: " + field.getName());
+        System.out.println("  Type: " + field.getType().getSimpleName());
+        int index = 0;
+        for (Object elem : collection) {
+            System.out.println("  Element[" + index + "]: " + elem.getClass().getSimpleName());
+            debugWithFields(elem); // 재귀적으로 각 요소 디버그
+            index++;
+        }
+    }
 }

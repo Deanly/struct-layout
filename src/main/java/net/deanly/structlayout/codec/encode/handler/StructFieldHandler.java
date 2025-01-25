@@ -1,9 +1,12 @@
 package net.deanly.structlayout.codec.encode.handler;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.CustomLayoutInstantiationException;
+
+import java.util.List;
 
 public class StructFieldHandler extends BaseFieldHandler {
 
@@ -32,6 +35,15 @@ public class StructFieldHandler extends BaseFieldHandler {
 
         // 6. Layout을 이용해 값 인코딩
         return fieldInstance.encode(convertedValue);
+    }
+
+    @Override
+    public <T> List<FieldDebugInfo.Builder> handleDebug(T instance, java.lang.reflect.Field field) throws IllegalAccessException {
+        byte[] encodedBytes = this.handleField(instance, field);
+        FieldDebugInfo.Builder builder = FieldDebugInfo.builder();
+        builder.fieldName(field.getName());
+        builder.encodedBytes(encodedBytes);
+        return List.of(builder);
     }
 
     /**

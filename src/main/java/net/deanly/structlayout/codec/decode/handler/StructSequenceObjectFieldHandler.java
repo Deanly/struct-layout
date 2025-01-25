@@ -58,9 +58,13 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
 
         // 5. 개별 요소 디코드
         for (int i = 0; i < length; i++) {
+            System.out.printf("Processing element %d of %d at offset %d%n", i, length, currentOffset);
+
             StructDecodeResult<?> decodeResult = StructDecoder.decode(elementType, data, currentOffset);
             Object decodedValue = decodeResult.getValue();
             int decodedSize = decodeResult.getSize();
+
+            System.out.printf("Decoded element %d: value=%s, size=%d%n", i, decodedValue, decodedSize);
 
             if (fieldType.isArray()) {
                 Array.set(result, i, decodedValue);
