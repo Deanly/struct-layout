@@ -3,6 +3,7 @@ package net.deanly.structlayout.codec.decode.handler;
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
+import net.deanly.structlayout.type.DynamicSpanField;
 
 public class StructFieldHandler extends BaseFieldHandler {
 
@@ -16,15 +17,17 @@ public class StructFieldHandler extends BaseFieldHandler {
         }
 
         Field<?> layout = createLayoutInstance(annotation.type());
-
         Object decodedValue = layout.decode(data, offset);
-
         Object targetValue = TypeConverterHelper.convertToType(decodedValue, field.getType());
 
         field.setAccessible(true);
         field.set(instance, targetValue);
 
-        return layout.getSpan();
+        if (layout instanceof DynamicSpanField) {
+            return ((DynamicSpanField) layout).calculateSpan(data, offset);
+        } else {
+            return layout.getSpan();
+        }
     }
 
     /**

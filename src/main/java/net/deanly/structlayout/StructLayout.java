@@ -1,6 +1,5 @@
 package net.deanly.structlayout;
 
-import net.deanly.structlayout.analysis.FieldDebugger;
 import net.deanly.structlayout.analysis.HexDumpUtil;
 import net.deanly.structlayout.codec.encode.StructEncoder;
 import net.deanly.structlayout.codec.decode.StructDecoder;
@@ -83,22 +82,4 @@ public class StructLayout {
         }
     }
 
-//    /**
-//     * Debugs the given byte array by class structure and provides a breakdown of its fields.
-//     *
-//     * @param data  The serialized byte array to debug.
-//     * @param clazz The class type to decode.
-//     */
-//    public static void debugWithFields(byte[] data, Class<?> clazz) {
-//        if (data == null || data.length == 0) {
-//            System.out.println("[Empty byte array]");
-//            return;
-//        }
-//
-//        try {
-//            FieldDebugger.debugByteArrayWithFields(data, clazz);
-//        } catch (Exception e) {
-//            System.err.println("[Field Debug Error: " + e.getMessage() + "]");
-//        }
-//    }
 }

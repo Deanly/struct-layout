@@ -1,13 +1,12 @@
 package net.deanly.structlayout.codec.decode.handler;
 
 import net.deanly.structlayout.Field;
-import net.deanly.structlayout.StructLayout;
 import net.deanly.structlayout.codec.decode.StructDecodeResult;
 import net.deanly.structlayout.codec.decode.StructDecoder;
 import net.deanly.structlayout.annotation.StructSequenceObjectField;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
-import net.deanly.structlayout.exception.LayoutInitializationException;
+import net.deanly.structlayout.type.DynamicSpanField;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -37,7 +36,9 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
         // 3. 길이 정보 디코딩
         Object lengthRawValue = lengthField.decode(data, offset);
         int length = (int) TypeConverterHelper.convertToType(lengthRawValue, Integer.class);
-        int currentOffset = offset + lengthField.getSpan();
+        int currentOffset = offset + ((lengthField instanceof DynamicSpanField) ?
+                ((DynamicSpanField) lengthField).calculateSpan(data, offset) :
+                lengthField.getSpan());
 
         // 4. 배열 또는 컬렉션 타입 확인
         Class<?> fieldType = field.getType();
