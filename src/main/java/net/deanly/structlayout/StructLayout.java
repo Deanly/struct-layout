@@ -44,32 +44,11 @@ public class StructLayout {
     }
 
     /**
-     * Debugs an object by encoding it into a byte array using StructLayout.encode
-     * and displaying it in a hex dump format.
-     *
-     * @param obj The Object to debug.
-     */
-    public static void debug(Object obj) {
-        if (obj == null) {
-            System.out.println("[Object is null]");
-            return;
-        }
-        try {
-            // Object를 encode하여 byte[]로 변환
-            byte[] encoded = StructEncoder.encode(obj);
-            // 변환한 byte[]를 debug(byte[])로 전달
-            debug(encoded);
-        } catch (Exception e) {
-            System.err.println("[Error encoding object: " + e.getMessage() + "]");
-        }
-    }
-
-    /**
      * Debugs the object by encoding it and providing a breakdown of each field.
      *
      * @param obj The object to debug.
      */
-    public static void debugWithFields(Object obj) {
+    public static void debug(Object obj) {
         if (obj == null) {
             System.out.println("[Object is null]");
             return;

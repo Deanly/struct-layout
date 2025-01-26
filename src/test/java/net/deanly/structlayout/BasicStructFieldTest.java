@@ -76,7 +76,7 @@ public class BasicStructFieldTest {
         System.out.println("Float Value: " + decodedStruct.getFloatValue());
 
         // Debugging a byte array
-        StructLayout.debugWithFields(decodedStruct);
+        StructLayout.debug(decodedStruct);
     }
 
     @Test
@@ -208,7 +208,7 @@ public class BasicStructFieldTest {
         StructLayout.debug(decodedStruct);
 
         System.out.println("Debug with Field:");
-        StructLayout.debugWithFields(decodedStruct);
+        StructLayout.debug(decodedStruct);
     }
 
     @Getter
