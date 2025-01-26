@@ -1,6 +1,5 @@
 package net.deanly.structlayout.codec.decode;
 
-import lombok.extern.slf4j.Slf4j;
 import net.deanly.structlayout.codec.helpers.FieldHelper;
 import net.deanly.structlayout.factory.ClassFactory;
 import net.deanly.structlayout.exception.*;
@@ -8,7 +7,6 @@ import net.deanly.structlayout.exception.*;
 import java.lang.reflect.Field;
 import java.util.List;
 
-@Slf4j
 public class StructDecoder {
     public static <T> StructDecodeResult<T> decode(Class<T> type, byte[] data, int startOffset) {
         if (startOffset < 0 || startOffset >= data.length) {

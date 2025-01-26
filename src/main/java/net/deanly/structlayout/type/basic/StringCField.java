@@ -47,7 +47,6 @@ import java.util.ArrayList;
  * - An exception is thrown if a null-terminator is not found during decoding or span calculation.
  * - Internal logging mechanisms are used for debugging and traceability.
  */
-@Slf4j
 public class StringCField extends FieldBase<String> implements DynamicSpanField, BasicType {
 
     private final Charset charset; // 문자열 인코딩 방식
@@ -162,17 +161,6 @@ public class StringCField extends FieldBase<String> implements DynamicSpanField,
         }
 
         return hexBuilder.toString();
-    }
-
-    @Override
-    public void printDebug(byte[] data, int offset, java.lang.reflect.Field field) {
-        if (isTestEnvironment()) {
-            if (offset > 0 && offset + getSpan() <= data.length) {
-                log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: \"{}\"",
-                        field.getDeclaringClass().getSimpleName(), field.getName(),
-                        bytesToHex(data, offset), calculateSpan(data, offset), decode(data, offset));
-            }
-        }
     }
 
 }

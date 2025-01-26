@@ -1,7 +1,6 @@
 package net.deanly.structlayout.type;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import net.deanly.structlayout.Field;
 
 import java.lang.reflect.ParameterizedType;
@@ -11,7 +10,6 @@ import java.lang.reflect.Type;
  * Abstract class providing encoding and decoding functionality.
  * @param <T> The type of the value being encoded/decoded.
  */
-@Slf4j
 @Getter
 public abstract class FieldBase<T> implements Field<T> {
     private final int span; // Number of bytes for this layout
@@ -224,33 +222,4 @@ public abstract class FieldBase<T> implements Field<T> {
         return genericType != null && isStringClass(genericType);
     }
 
-    public void printDebug(byte[] data, int offset, java.lang.reflect.Field field) {
-        if (isTestEnvironment()) {
-            if (offset > 0 && offset + getSpan() <= data.length) {
-                try {
-                    log.debug("[Field: {}.{}] Bytes: [{}] ({} bytes), Value: {}",
-                            field.getDeclaringClass().getSimpleName(), field.getName(),
-                            bytesToHex(data, offset), getSpan(), decode(data, offset));
-                } catch (RuntimeException ex) {
-                    log.debug("[Field: {}.{}] {}", field.getDeclaringClass().getSimpleName(), field.getName(), ex.getMessage());
-                }
-            }
-        }
-    }
-
-    private static Boolean isTestMode = null;
-    public boolean isTestEnvironment() {
-        if (isTestMode == null) {
-            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                if (element.getClassName().startsWith("org.junit.") || element.getClassName().startsWith("org.testng.")) {
-                    isTestMode = true;
-                    break;
-                }
-            }
-            if (isTestMode == null) {
-                isTestMode = false;
-            }
-        }
-        return isTestMode;
-    }
 }
