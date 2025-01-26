@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'net.deanly'
-version = '0.2.0'
+version = '0.2.1'
 
 java {
     toolchain {
@@ -21,8 +21,6 @@ repositories {
 }
 
 dependencies {
-    testRuntimeOnly 'ch.qos.logback:logback-classic:1.4.12'
-
     compileOnly 'org.projectlombok:lombok:1.18.36'
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
     testCompileOnly 'org.projectlombok:lombok:1.18.36'
@@ -36,6 +34,9 @@ dependencies {
 
 tasks.withType(Test) {
     useJUnitPlatform()
+}
+tasks.withType(Javadoc) { // Disabled Javadoc due to Lombok Builder issues
+    enabled = false
 }
 tasks.named("build") {
     doFirst {
