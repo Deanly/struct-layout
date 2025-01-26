@@ -2,7 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java Version](https://img.shields.io/badge/Java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Java](https://img.shields.io/badge/Pure-Java-orange)](https://www.java.com/)
-[![Maven Central](https://img.shields.io/maven-central/v/net.deanly/struct-field.svg)](https://central.sonatype.com/artifact/net.deanly/struct-field)
+[![Maven Central](https://img.shields.io/maven-central/v/net.deanly/struct-layout.svg)](https://central.sonatype.com/artifact/net.deanly/struct-layout)
 
 StructLayout is a Java library designed to simplify working with **binary data** using structured layouts. It allows you to easily encode/decode complex data structures into/from byte arrays by just defining a `Struct` class with simple annotations.
 
@@ -39,7 +39,7 @@ And include the dependency in your `pom.xml`:
     <dependency>
         <groupId>net.deanly</groupId>
         <artifactId>struct-layout</artifactId>
-        <version>0.2.0</version>
+        <version>0.2.1</version>
     </dependency>
 </dependencies>
 ```
@@ -49,7 +49,7 @@ Add the GitHub repository to your `build.gradle` file:
 
 ```gradle
 dependencies {
-    implementation 'net.deanly:struct-layout:0.2.0'
+    implementation 'net.deanly:struct-layout:0.2.1'
 }
 ```
 
@@ -90,6 +90,9 @@ class SimpleStruct {
     @StructObjectField(order = 7)
     private CustomStruct customStruct;
 
+    @StructSequenceObjectField(order = 8, lengthType = Int16LEField.class)
+    private List<CustomStruct> customStructList;
+
     // Getter and Setter...
 }
 
@@ -98,10 +101,10 @@ class CustomStruct {
     private long id; // Although it's INT32_LE in bytes, it is represented as a long type in Java.
 
     @StructField(order = 2, type = KeyField.class)
-    private String key;
+    private Key key;
 
     public CustomStruct() { }
-    public CustomStruct(long id, String name) {
+    public CustomStruct(long id, Key name) {
         this.id = id;
         this.name = name;
     }
@@ -165,7 +168,11 @@ public class StructExample {
         struct.setStringValue("Hello, StructObject!");
         struct.setFloatArray(new float[]{3.14f, 1.59f});
         struct.setDoubleList(List.of(1.23, 4.56));
-        struct.setCustomStruct(new CustomStruct(7L, "11111111111111111111111111111111"));
+        struct.setCustomStruct(new CustomStruct(7L, new Key("11111111111111111111111111111111")));
+        struct.setCustomStructList(List.of(
+                new CustomStruct(10000L, new Key("11111111111111111111111111111111")),
+                new CustomStruct(80000L, new Key("11111111111111111111111111111111"))
+        ));
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
@@ -213,7 +220,11 @@ Debug Serialized Data:
 00000030: ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a 3d 07 00   ..z.G.@.=p...=..
 00000040: 00 00 31 31 31 31 31 31 31 31 31 31 31 31 31 31   ..11111111111111
 00000050: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
-00000060: 31 31                                             11
+00000060: 31 31 02 00 10 27 00 00 31 31 31 31 31 31 31 31   11...'..11111111
+00000070: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
+00000080: 31 31 31 31 31 31 31 31 80 38 01 00 31 31 31 31   11111111.8..1111
+00000090: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
+000000a0: 31 31 31 31 31 31 31 31 31 31 31 31               111111111111
 
 Decoded Struct:
 Int32 Value (Little-Endian): 42
@@ -227,13 +238,27 @@ Custom Struct:
   Key: Key(key=11111111111111111111111111111111)
 
 Debug Decoded Struct:
-00000000: 2a 00 00 00 00 00 00 2a 66 e6 f6 42 48 65 6c 6c   *......*f..BHell
-00000010: 6f 2c 20 53 74 72 75 63 74 4f 62 6a 65 63 74 21   o, StructObject!
-00000020: 00 02 00 00 00 c3 f5 48 40 1f 85 cb 3f 02 3f f3   .......H@...?.?.
-00000030: ae 14 7a e1 47 ae 40 12 3d 70 a3 d7 0a 3d 07 00   ..z.G.@.=p...=..
-00000040: 00 00 31 31 31 31 31 31 31 31 31 31 31 31 31 31   ..11111111111111
-00000050: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31   1111111111111111
-00000060: 31 31                                             11
+Order      Field            Offset  Bytes (HEX)
+=====================================================
+1          int32Value       0000000 2A 00 00 00
+2          int32BeValue     0000004 00 00 00 2A
+3          floatValue       0000008 66 E6 F6 42
+4          stringValue      0000012 48 65 6C 6C 6F 2C 20 53 74 72 75 63 74 4F 62 6A 65 63 74 21 00
+5[].length floatArray       0000033 02 00 00 00
+5[0]       floatArray       0000037 C3 F5 48 40
+5[1]       floatArray       0000041 1F 85 CB 3F
+6[].length doubleList       0000045 02
+6[0]       doubleList       0000046 3F F3 AE 14 7A E1 47 AE
+6[1]       doubleList       0000054 40 12 3D 70 A3 D7 0A 3D
+7-1        id               0000062 07 00 00 00
+7-2        key              0000066 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31
+8[].length customStructList 0000098 02 00
+8[0]-1     id               0000100 10 27 00 00
+8[0]-2     key              0000104 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31
+8[1]-1     id               0000136 80 38 01 00
+8[1]-2     key              0000140 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31
+=====================================================
+Total Bytes: 172
 
 
 ```
