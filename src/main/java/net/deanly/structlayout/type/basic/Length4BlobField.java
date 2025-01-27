@@ -70,7 +70,6 @@ public class Length4BlobField extends FieldBase<byte[]> implements BasicType, Dy
         return length + 4; // Length 필드 (4) + Value 필드
     }
 
-    @Override
     public void setSpan(int span) {
         this.length = span - 4;
     }

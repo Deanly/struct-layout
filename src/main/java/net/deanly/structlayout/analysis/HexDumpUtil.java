@@ -16,6 +16,10 @@ public class HexDumpUtil {
         int offset = 0;
 
         while (offset < length) {
+            if (offset != 0) {
+                hexDump.append(System.lineSeparator());
+            }
+
             // Append the offset (in hexadecimal).
             hexDump.append(String.format("%08x: ", offset));
 
@@ -44,7 +48,6 @@ public class HexDumpUtil {
                 }
             }
 
-            hexDump.append(System.lineSeparator());
             offset += 16;
         }
 

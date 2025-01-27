@@ -79,11 +79,25 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
             }
             elementCount++;
 
+            int expectedSpan;
             if (elementField instanceof DynamicSpanField) {
-                currentOffset += ((DynamicSpanField) elementField).calculateSpan(data, currentOffset);
+                expectedSpan = ((DynamicSpanField) elementField).calculateSpan(data, currentOffset);
             } else {
-                currentOffset += elementField.getSpan();
+                expectedSpan = elementField.getSpan();
             }
+
+            if (expectedSpan == 0) {
+                throw new IllegalStateException(
+                        String.format(
+                                "Failed to decode data at offset %d. The decoding process returned zero span. This indicates that parsing the given data (%s) into an instance of '%s' is not possible or the input data is corrupted.",
+                                currentOffset,
+                                java.util.Arrays.toString(data),
+                                elementType != null ? elementType.getCanonicalName() : "Unknown Type"
+                        )
+                );
+            }
+
+            currentOffset += expectedSpan;
         }
 
         // 6. 필드 값 설정

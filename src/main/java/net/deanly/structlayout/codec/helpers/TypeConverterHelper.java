@@ -83,6 +83,8 @@ public class TypeConverterHelper {
         if (targetType == Boolean.class || targetType == boolean.class) {
             if (value instanceof String) {
                 return Boolean.valueOf((String) value);
+            } else if (value instanceof Number) {
+                return Integer.parseInt(String.valueOf(value)) != 0;
             }
         }
 

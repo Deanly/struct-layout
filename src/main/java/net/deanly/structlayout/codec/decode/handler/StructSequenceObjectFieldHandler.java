@@ -98,6 +98,17 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             Object decodedValue = decodeResult.getValue();
             int decodedSize = decodeResult.getSize();
 
+            if (decodedValue == null || decodedSize == 0) {
+                throw new IllegalStateException(
+                        String.format(
+                                "Failed to decode data at offset %d. The decoding process returned null. This indicates that parsing the given data (%s) into an instance of '%s' is not possible or the input data is corrupted.",
+                                currentOffset,
+                                java.util.Arrays.toString(data),
+                                elementType != null ? elementType.getCanonicalName() : "Unknown Type"
+                        )
+                );
+            }
+
             if (fieldType.isArray()) {
                 if (unsafeMode) {
                     // Unsafe Mode에서 리스트에 추가

@@ -54,7 +54,6 @@ class CachedLayoutProviderTest {
             return null;
         }
 
-        @Override
         public void setSpan(int span) {
             this.span = span;
         }
@@ -99,7 +98,6 @@ class CachedLayoutProviderTest {
             return null;
         }
 
-        @Override
         public void setSpan(int span) {
             throw new UnsupportedOperationException("Span is final");
         }

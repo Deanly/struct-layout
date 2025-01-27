@@ -129,12 +129,10 @@ public class StringCField extends FieldBase<String> implements DynamicSpanField,
         throw new IllegalArgumentException("Null-terminated character not found");
     }
 
-    @Override
     public void setSpan(int span) {
         this.span = span;
     }
 
-    @Override
     public int getSpan() {
         return this.span;
     }

@@ -27,16 +27,6 @@ public class OffsetField<T> extends FieldBase<T> implements DynamicSpanField {
     }
 
     @Override
-    public void setSpan(int span) {
-        this.span = span;
-    }
-
-    @Override
-    public int getSpan() {
-        return span;
-    }
-
-    @Override
     public T decode(byte[] data, int currentOffset) {
         int adjustedOffset = currentOffset + this.offset;
         if (adjustedOffset < 0 || adjustedOffset >= data.length) {

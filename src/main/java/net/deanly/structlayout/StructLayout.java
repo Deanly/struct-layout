@@ -41,6 +41,7 @@ public class StructLayout {
         }
         String hexDump = HexDumpUtil.toHexDump(data);
         System.out.println(hexDump);
+        System.out.println("Total Bytes: " + data.length);
     }
 
     /**
