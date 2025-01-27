@@ -154,7 +154,7 @@ public class TypeConverterHelper {
             return value.doubleValue();
         }
         if (targetClass == java.math.BigInteger.class) {
-            return java.math.BigInteger.valueOf(value.longValue());
+            return new java.math.BigInteger(value.toString());
         }
 
         throw new TypeConversionException("Unsupported number conversion to type: " + targetClass);

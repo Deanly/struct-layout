@@ -1,5 +1,8 @@
 package net.deanly.structlayout.type.basic;
 
+import lombok.Data;
+import net.deanly.structlayout.StructLayout;
+import net.deanly.structlayout.annotation.StructField;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -7,6 +10,32 @@ import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UInt64LEFieldTest {
+
+    @Data
+    public static class TestStruct {
+        @StructField(order = 1, type = UInt64LEField.class)
+        private BigInteger value1;
+        @StructField(order = 2, type = UInt64LEField.class)
+        private long value2;
+    }
+
+    @Test
+    void testStruct() {
+        BigInteger max = new BigInteger("18446744073709551615");
+        long maxLong = Long.MAX_VALUE;
+        TestStruct struct = new TestStruct();
+        struct.setValue1(max);
+        struct.setValue2(maxLong);
+
+        byte[] encoded = StructLayout.encode(struct);
+        StructLayout.debug(encoded);
+        TestStruct decoded = StructLayout.decode(encoded, TestStruct.class);
+        StructLayout.debug(decoded);
+
+        assertEquals(max, decoded.getValue1());
+        assertEquals(maxLong, decoded.getValue2());
+
+    }
 
     @Test
     void testEncode() {
