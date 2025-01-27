@@ -3,7 +3,7 @@
 [![Java Version](https://img.shields.io/badge/Java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Java](https://img.shields.io/badge/Pure-Java-orange)](https://www.java.com/)
 [![Maven Central](https://img.shields.io/maven-central/v/net.deanly/struct-layout.svg?color=008080)](https://central.sonatype.com/artifact/net.deanly/struct-layout)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-None-brightgreen)]()
+![Runtime Dependencies](https://img.shields.io/badge/runtime%20dependencies-none-brightgreen.svg)
 
 StructLayout is a Java library designed to simplify working with **binary data** using structured layouts. It allows you to easily encode/decode complex data structures into/from byte arrays by just defining a `Struct` class with simple annotations.
 
