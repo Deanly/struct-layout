@@ -8,6 +8,7 @@ import net.deanly.structlayout.exception.LayoutInitializationException;
 import net.deanly.structlayout.codec.helpers.ByteArrayHelper;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.type.CountableField;
+import net.deanly.structlayout.type.basic.NoneField;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -29,11 +30,11 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         // 3. 길이 및 요소 타입 메타데이터 조회
         Class<? extends CountableField<?>> lengthType = annotation.lengthType();
         Class<? extends Field<?>> elementFieldType = annotation.elementType();
+        boolean unsafeMode = NoneField.class.isAssignableFrom(lengthType);
 
         // 4. Null 처리: 빈 배열로 대체
         if (arrayOrList == null) {
-            int length = 0; // 길이는 0으로 설정
-            return encodeLengthAndElements(length, new ArrayList<>(), lengthType, elementFieldType);
+            return encodeLengthAndElements(new ArrayList<>(), lengthType, elementFieldType, unsafeMode);
         }
 
         // 5. 배열 또는 List인지 확인, 아니면 예외 발생
@@ -53,23 +54,25 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         }
 
         // 6. 길이와 요소 병합 처리
-        return encodeLengthAndElements(elements.size(), elements, lengthType, elementFieldType);
+        return encodeLengthAndElements(elements, lengthType, elementFieldType, unsafeMode);
     }
 
     /**
      * 길이와 요소 데이터 처리 후 인코딩
      */
     private byte[] encodeLengthAndElements(
-            int length,
             List<Object> elements,
             Class<? extends CountableField<?>> lengthType,
-            Class<? extends Field<?>> elementFieldType
+            Class<? extends Field<?>> elementFieldType,
+            boolean unsafeMode
     ) {
         List<byte[]> encodedChunks = new ArrayList<>();
         try {
-            // 길이 인코딩
-            Object convertedLength = TypeConverterHelper.convertToLayoutType(length, lengthType);
-            encodedChunks.add(encodeElement(lengthType, convertedLength));
+            if (!unsafeMode) {
+                // 길이 인코딩
+                Object convertedLength = TypeConverterHelper.convertToLayoutType(elements.size(), lengthType);
+                encodedChunks.add(encodeElement(lengthType, convertedLength));
+            }
 
             // 요소 인코딩
             for (Object element : elements) {

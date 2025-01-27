@@ -10,6 +10,7 @@ import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
 import net.deanly.structlayout.exception.LayoutInitializationException;
 import net.deanly.structlayout.type.CountableField;
+import net.deanly.structlayout.type.basic.NoneField;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -32,10 +33,11 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
 
         // 3. 길이 타입 메타데이터 조회
         Class<? extends CountableField<?>> lengthType = annotation.lengthType();
+        boolean unsafeMode = NoneField.class.isAssignableFrom(lengthType);
 
         // 4. Null 처리
         if (arrayOrList == null) {
-            return encodeLengthAndElements(0, new ArrayList<>(), lengthType);
+            return encodeLengthAndElements(new ArrayList<>(), lengthType, unsafeMode);
         }
 
         // 5. 배열 또는 List 인지 확인
@@ -55,7 +57,7 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
         }
 
         // 6. 인코딩
-        return encodeLengthAndElements(elements.size(), elements, lengthType);
+        return encodeLengthAndElements(elements, lengthType, unsafeMode);
     }
 
     /**
@@ -63,16 +65,18 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
      */
     @SuppressWarnings("unchecked")
     private byte[] encodeLengthAndElements(
-            int length,
             List<Object> elements,
-            Class<? extends CountableField<?>> lengthType
+            Class<? extends CountableField<?>> lengthType,
+            boolean unsafeMode
     ) {
         List<byte[]> encodedChunks = new ArrayList<>();
         try {
             // 길이 인코딩
-            Field<Object> lengthField = resolveLayout(lengthType);
-            Object convertedLength = TypeConverterHelper.convertToLayoutType(length, lengthType);
-            encodedChunks.add(lengthField.encode(convertedLength));
+            if (!unsafeMode) {
+                Field<Object> lengthField = resolveLayout(lengthType);
+                Object convertedLength = TypeConverterHelper.convertToLayoutType(elements.size(), lengthType);
+                encodedChunks.add(lengthField.encode(convertedLength));
+            }
 
             // 요소 인코딩
             for (Object element : elements) {

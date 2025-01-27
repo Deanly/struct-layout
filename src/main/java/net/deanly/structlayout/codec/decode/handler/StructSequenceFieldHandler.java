@@ -6,6 +6,7 @@ import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
 import net.deanly.structlayout.exception.LayoutInitializationException;
 import net.deanly.structlayout.type.DynamicSpanField;
+import net.deanly.structlayout.type.basic.NoneField;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -29,8 +30,14 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         Class<? extends Field<?>> elementFieldClass = annotation.elementType();
 
         // 3. 길이 정보 디코딩
-        Object rawLengthValue = lengthField.decode(data, offset);
-        int length = (int) TypeConverterHelper.convertToType(rawLengthValue, Integer.class);
+        int length;
+        boolean unsafeMode = lengthField instanceof NoneField;
+        if (unsafeMode) {
+            length = -1;
+        } else {
+            Object rawLengthValue = lengthField.decode(data, offset);
+            length = (int) TypeConverterHelper.convertToType(rawLengthValue, Integer.class);
+        }
         int currentOffset = offset + ((lengthField instanceof DynamicSpanField) ?
                 ((DynamicSpanField) lengthField).calculateSpan(data, offset) :
                 lengthField.getSpan());
@@ -43,7 +50,7 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         if (fieldType.isArray()) {
             // 배열인 경우
             elementType = fieldType.getComponentType();
-            result = Array.newInstance(elementType, length);
+            result = !unsafeMode ? Array.newInstance(elementType, length) : new ArrayList<>();
         } else if (Collection.class.isAssignableFrom(fieldType)) {
             // 컬렉션인 경우
             elementType = resolveCollectionElementType(field);
@@ -60,15 +67,17 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         } catch (Exception ex) {
             throw new LayoutInitializationException("Failed to initialize Field for elementType", ex);
         }
-        for (int i = 0; i < length; i++) {
+        int elementCount = 0;
+        while ((unsafeMode && currentOffset < data.length) || (!unsafeMode && elementCount < length)) {
             Object rawElement = elementField.decode(data, currentOffset);
             Object convertedElement = TypeConverterHelper.convertToType(rawElement, elementType);
 
-            if (fieldType.isArray()) {
-                Array.set(result, i, convertedElement);
+            if (fieldType.isArray() && !unsafeMode) {
+                Array.set(result, elementCount, convertedElement);
             } else {
                 ((Collection<Object>) result).add(convertedElement);
             }
+            elementCount++;
 
             if (elementField instanceof DynamicSpanField) {
                 currentOffset += ((DynamicSpanField) elementField).calculateSpan(data, currentOffset);
@@ -79,7 +88,16 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
 
         // 6. 필드 값 설정
         field.setAccessible(true);
-        field.set(instance, result);
+        if (unsafeMode && fieldType.isArray()) {
+            Object arrayResult = Array.newInstance(elementType, elementCount);
+            List<?> tempList = (List<?>) result;
+            for (int i = 0; i < elementCount; i++) {
+                Array.set(arrayResult, i, tempList.get(i));
+            }
+            field.set(instance, arrayResult);
+        } else {
+            field.set(instance, result);
+        }
 
         return currentOffset - offset;
     }

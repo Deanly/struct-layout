@@ -7,6 +7,7 @@ import net.deanly.structlayout.type.basic.Int32BEField;
 import net.deanly.structlayout.type.basic.StringCField;
 import net.deanly.structlayout.type.basic.UInt8Field;
 import net.deanly.structlayout.codec.encode.StructEncoder;
+import net.deanly.structlayout.type.basic.NoneField;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-class StructSequenceObjectFieldHandlerTest {
+class StructSequenceObjectFieldEncoderHandlerTest {
 
     // 테스트용 Struct 클래스 정의
     public static class SimpleStruct {
@@ -77,6 +78,48 @@ class StructSequenceObjectFieldHandlerTest {
 
         StructLayout.debug(encodedData);
         StructLayout.debug(expectedData);
+
+        // 4. 결과 검증
+        assertArrayEquals(expectedData, encodedData, "Encoded data should match the expected byte array.");
+    }
+
+    // VoidField를 lengthType으로 설정
+    public static class StructWithVoidLength {
+        @StructSequenceObjectField(order = 1, lengthType = NoneField.class)
+        private List<SimpleStruct> items;
+
+        public StructWithVoidLength(List<SimpleStruct> items) {
+            this.items = items;
+        }
+
+        public StructWithVoidLength() {}
+    }
+
+    @Test
+    void testEncodeStructSequenceObjectField_withVoidField() {
+        // 1. 테스트 데이터 준비
+        List<SimpleStruct> itemList = Arrays.asList(
+                new SimpleStruct(100, "Test1"),
+                new SimpleStruct(200, "Test2")
+        );
+
+        StructWithVoidLength testStruct = new StructWithVoidLength(itemList);
+
+        // 2. 직렬화 수행
+        byte[] encodedData = StructEncoder.encode(testStruct);
+
+        // 3. 예상 출력값 설정 (길이 정보 없이 요소만 직렬화됨)
+        byte[] expectedData = new byte[] {
+                // Item 1 (id=100, value="Test1")
+                0, 0, 0, 100,   // Int32 (id)
+                'T', 'e', 's', 't', '1', 0, // UTF-8 ("Test1")
+                // Item 2 (id=200, value="Test2")
+                0, 0, 0, (byte) 200,   // Int32 (id)
+                'T', 'e', 's', 't', '2', 0  // UTF-8 ("Test2")
+        };
+
+        StructLayout.debug(encodedData); // 디버깅용 출력
+        StructLayout.debug(expectedData); // 예상값 출력
 
         // 4. 결과 검증
         assertArrayEquals(expectedData, encodedData, "Encoded data should match the expected byte array.");

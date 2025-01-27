@@ -12,8 +12,13 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public class FieldHelper {
+
+    public static final Set<Class<?>> PRIMITIVE_WRAPPERS = Set.of(
+            Integer.class, Long.class, Short.class, Byte.class, Double.class, Float.class, Boolean.class, Character.class
+    );
 
     /**
      * Returns a list of fields from the given array that are annotated with specific annotations

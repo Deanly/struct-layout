@@ -66,7 +66,7 @@ public class ClassFactory {
         try {
             // 비정적(non-static) 내부 클래스인지 검증
             if (layoutClass.isMemberClass() && !Modifier.isStatic(layoutClass.getModifiers())) {
-                throw new LayoutInitializationException("The Layout class '"
+                throw new LayoutInitializationException("The Field class '"
                         + layoutClass.getName()
                         + "' is a non-static inner class. Make it static or redesign it properly.");
             }
@@ -91,7 +91,7 @@ public class ClassFactory {
             }
 
             if (!hasNoArgConstructor) {
-                throw new LayoutInitializationException("The Layout class '"
+                throw new LayoutInitializationException("The Field class '"
                         + layoutClass.getName()
                         + "' does not have a valid no-arguments constructor. " +
                         "If it is a non-static inner class, make it 'static' or define its constructor properly.");
@@ -104,20 +104,20 @@ public class ClassFactory {
         } catch (LayoutInitializationException e) {
             throw e;
         } catch (NoSuchMethodException e) {
-            throw new LayoutInitializationException("The Layout class '"
+            throw new LayoutInitializationException("The Field class '"
                     + layoutClass.getName()
                     + "' must have a public no-arguments constructor.", e);
         } catch (IllegalAccessException e) {
-            throw new LayoutInitializationException("Cannot access the constructor of Layout class: "
+            throw new LayoutInitializationException("Cannot access the constructor of Field class: "
                     + layoutClass.getName(), e);
         } catch (InstantiationException e) {
-            throw new LayoutInitializationException("Cannot instantiate Layout class: "
+            throw new LayoutInitializationException("Cannot instantiate Field class: "
                     + layoutClass.getName(), e);
         } catch (InvocationTargetException e) {
-            throw new LayoutInitializationException("Exception occurred while initializing Layout class: "
+            throw new LayoutInitializationException("Exception occurred while initializing Field class: "
                     + layoutClass.getName() + ". Check the constructor logic.", e.getCause());
         } catch (Exception e) {
-            throw new LayoutInitializationException("Failed to instantiate Layout class: "
+            throw new LayoutInitializationException("Failed to instantiate Field class: "
                     + layoutClass.getName(), e);
         }
     }

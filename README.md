@@ -113,13 +113,10 @@ class CustomStruct {
     // Getter and Setter...
 }
 
-public static class KeyField implements Field<Key> {
+public static class KeyField extends FieldBase<Key> {
     private static final int KEY_LENGTH = 32; // 32 bytes
-    public KeyField() { }
-    
-    @Override
-    public int getSpan() {
-        return KEY_LENGTH;
+    public KeyField() {
+        super(KEY_LENGTH);
     }
 
     @Override

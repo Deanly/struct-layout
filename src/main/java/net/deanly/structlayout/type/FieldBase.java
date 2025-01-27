@@ -7,12 +7,45 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
- * Abstract class providing encoding and decoding functionality.
- * @param <T> The type of the value being encoded/decoded.
+ * Abstract base class for defining the structure and behavior of fields that
+ * implement encoding and decoding functionality in a structured byte layout.
+ *
+ * <p>
+ * This class provides key utilities for managing generic type information, validating
+ * operation boundaries, and converting data into a consistent structure. It is
+ * intended to be a common base class for all user-defined fields within the system.
+ * </p>
+ *
+ * <h2>Key Features:</h2>
+ * <ul>
+ *   <li>Manages the byte span of a field, which indicates the number of bytes processed during encoding/decoding.</li>
+ *   <li>Supports runtime discovery of generic type information to maintain type safety and enhance usability.</li>
+ *   <li>Provides utility methods for debugging, including hexadecimal representation of data.</li>
+ * </ul>
+ *
+ * <h2>Requirements for Implementation:</h2>
+ * <ul>
+ *   <li>Subclasses MUST define the exact behavior for {@link #encode(Object)} and {@link #decode(byte[], int)} methods.</li>
+ *   <li>All subclasses should explicitly specify the {@link #span} for the proper handling of byte layout validation.</li>
+ *   <li>User-defined fields designed for custom encoding/decoding MUST extend this class to ensure runtime type consistency.</li>
+ * </ul>
+ *
+ * @param <T> The type of the value being encoded/decoded. This is the data type
+ *            the field operates on (e.g., Integer, String, etc.).
  */
 @Getter
 public abstract class FieldBase<T> implements Field<T> {
+    /**
+     * The number of bytes this field operates on during encoding/decoding.
+     * It is essential for subclasses to define this value correctly to avoid
+     * boundary or length errors in data manipulation.
+     */
     private final int span; // Number of bytes for this layout
+
+    /**
+     * An optional identifier or property name associated with this field.
+     * This can be useful for debugging or for mapping schema metadata.
+     */
     private final String property; // Optional associated property name
 
     /**

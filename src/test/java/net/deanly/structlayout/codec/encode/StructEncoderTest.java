@@ -246,7 +246,7 @@ class StructEncoderTest {
                 () -> CachedLayoutProvider.getLayout(ExceptionThrowingConstructorField.class),
                 "Should throw exception for constructor throwing exception");
 
-        assertTrue(exception.getMessage().contains("Exception occurred while initializing Layout"),
+        assertTrue(exception.getMessage().contains("Exception occurred while initializing Field"),
                 "Exception message should mention an error in the constructor logic");
         assertNotNull(exception.getCause(), "Exception should contain the root cause");
         assertTrue(exception.getCause() instanceof IllegalArgumentException,
@@ -276,7 +276,7 @@ class StructEncoderTest {
                 () -> CachedLayoutProvider.getLayout(AbstractField.class),
                 "Should throw exception for abstract class");
 
-        assertTrue(exception.getMessage().contains("Cannot instantiate Layout class"),
+        assertTrue(exception.getMessage().contains("Cannot instantiate Field class"),
                 "Exception message should mention instantiation failure for abstract class");
     }
 

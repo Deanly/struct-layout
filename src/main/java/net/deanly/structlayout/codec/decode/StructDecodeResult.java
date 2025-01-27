@@ -1,5 +1,6 @@
 package net.deanly.structlayout.codec.decode;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
