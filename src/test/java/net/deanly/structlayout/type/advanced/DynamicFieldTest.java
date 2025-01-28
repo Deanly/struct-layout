@@ -13,7 +13,7 @@ public class DynamicFieldTest {
     @Test
     public void test() {
         // Parent Layout spans 12 bytes
-        ParentField<Integer> parentLayout = new ParentField<Integer>(12, "Parent") {
+        ParentField<Integer> parentLayout = new ParentField<Integer>(12) {
             @Override
             public Integer decode(byte[] data, int offset) {
                 return (int) data[offset]; // Example: Parent provides a simple value
@@ -31,7 +31,7 @@ public class DynamicFieldTest {
         };
 
         // OffsetLayout with a base layout of 4 bytes (child data at offset 4)
-        OffsetField<Integer> offsetLayout = new OffsetField<>(new Int32LEField(), 4, "ChildA");
+        OffsetField<Integer> offsetLayout = new OffsetField<>(new Int32LEField(), 4);
         parentLayout.addChild(offsetLayout);
 
         // Testing decoding

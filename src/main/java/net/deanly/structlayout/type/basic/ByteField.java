@@ -7,12 +7,8 @@ import net.deanly.structlayout.type.FieldBase;
  * This layout operates on 1-byte values, maintaining their signed representation.
  */
 public class ByteField extends FieldBase<Byte> implements BasicType {
-    public ByteField(String property) {
-        super(1, property); // 1 바이트
-    }
-
     public ByteField() {
-        this(null);
+        super(1, Byte.class); // 1 바이트
     }
 
     @Override

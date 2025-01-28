@@ -2,7 +2,7 @@ package net.deanly.structlayout.codec.decode.handler;
 
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.StructSequenceField;
-import net.deanly.structlayout.type.basic.NoneField;
+import net.deanly.structlayout.type.advanced.NoneField;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

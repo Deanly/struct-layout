@@ -1,4 +1,4 @@
-package net.deanly.structlayout.type.basic;
+package net.deanly.structlayout.type.advanced;
 
 import net.deanly.structlayout.type.CountableField;
 import net.deanly.structlayout.type.FieldBase;

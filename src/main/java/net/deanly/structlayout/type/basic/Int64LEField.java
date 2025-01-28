@@ -7,15 +7,9 @@ public class Int64LEField extends FieldBase<Long> implements CountableField<Long
 
     /**
      * Constructs a Int64 layout for signed 64-bit integers in little-endian format.
-     *
-     * @param property (Optional) Property name associated with this layout.
      */
-    public Int64LEField(String property) {
-        super(8, property);
-    }
-
     public Int64LEField() {
-        this(null);
+        super(8, Long.class);
     }
 
     /**

@@ -1,7 +1,6 @@
 package net.deanly.structlayout.codec.helpers;
 
 import net.deanly.structlayout.Field;
-import net.deanly.structlayout.Field;
 import net.deanly.structlayout.exception.TypeConversionException;
 import net.deanly.structlayout.type.FieldBase;
 
@@ -41,7 +40,8 @@ public class TypeConverterHelper {
      */
     public static Object convertToLayoutType(Object value, Class<? extends Field<?>> targetType) {
         if (value == null) {
-            return handleNullValue(FieldBase.getGenericTypeAsObject(targetType));
+//            return handleNullValue(FieldBase.getGenericTypeAsObject(targetType));
+            return handleNullValueAllowNull(value, targetType);
         }
         return convertToType(value, FieldBase.getGenericTypeAsObject(targetType));
     }
@@ -56,7 +56,8 @@ public class TypeConverterHelper {
      */
     public static Object convertToType(Object value, Class<?> targetType) {
         if (value == null) {
-            return handleNullValue(targetType);
+//            return handleNullValue(targetType);
+            return handleNullValueAllowNull(value, targetType);
         }
 
         // 숫자형 변환: targetType이 숫자형 타입인지 확인
@@ -283,6 +284,19 @@ public class TypeConverterHelper {
 
         // 그 외 타입
         return null;
+    }
+
+    public static Object handleNullValueAllowNull(Object value, Class<?> targetType) {
+        if (value == null) {
+            // 참조형인지 확인하고, 참조형이면 null 반환
+            if (!targetType.isPrimitive()) {
+                return null;
+            }
+            // 기본 자료형인 경우 handleNullValue로 기본 값을 반환
+            return handleNullValue(targetType);
+        }
+        // 일반적인 변환 로직 처리
+        return convertToType(value, targetType);
     }
 
     private static Object handleNaN(Class<?> targetClass) {

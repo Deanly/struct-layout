@@ -7,7 +7,7 @@ import net.deanly.structlayout.type.basic.Int32BEField;
 import net.deanly.structlayout.type.basic.StringCField;
 import net.deanly.structlayout.type.basic.UInt8Field;
 import net.deanly.structlayout.codec.encode.StructEncoder;
-import net.deanly.structlayout.type.basic.NoneField;
+import net.deanly.structlayout.type.advanced.NoneField;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

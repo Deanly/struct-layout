@@ -3,6 +3,7 @@ package net.deanly.structlayout.codec.encode.handler;
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.annotation.StructField;
+import net.deanly.structlayout.codec.helpers.FieldHelper;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.CustomLayoutInstantiationException;
 
@@ -28,7 +29,7 @@ public class StructFieldHandler extends BaseFieldHandler {
         Field<Object> fieldInstance = createLayoutInstance(layoutClass, field.getName());
 
         // 4. Layout의 제네릭 타입 추출
-        Class<?> genericType = extractLayoutGenericType(layoutClass);
+        Class<?> genericType = FieldHelper.extractLayoutGenericType(layoutClass);
 
         // 5. TypeConverter를 통해 값 변환
         Object convertedValue = TypeConverterHelper.convertToType(fieldValue, genericType);
@@ -44,21 +45,6 @@ public class StructFieldHandler extends BaseFieldHandler {
         builder.fieldName(field.getName());
         builder.encodedBytes(encodedBytes);
         return List.of(builder);
-    }
-
-    /**
-     * Extract the generic type defined by the Layout class.
-     */
-    private Class<?> extractLayoutGenericType(Class<? extends Field<?>> layoutClass) {
-        // 기본적인 제네릭 추출
-        try {
-            return (Class<?>) ((java.lang.reflect.ParameterizedType) layoutClass
-                    .getGenericSuperclass()).getActualTypeArguments()[0];
-        } catch (Exception e) {
-            throw new IllegalArgumentException(
-                    String.format("Unable to extract generic type from Layout class '%s'", layoutClass.getName()), e
-            );
-        }
     }
 
     /**

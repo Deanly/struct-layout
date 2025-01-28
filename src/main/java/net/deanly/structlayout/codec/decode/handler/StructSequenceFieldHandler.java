@@ -6,7 +6,7 @@ import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
 import net.deanly.structlayout.exception.LayoutInitializationException;
 import net.deanly.structlayout.type.DynamicSpanField;
-import net.deanly.structlayout.type.basic.NoneField;
+import net.deanly.structlayout.type.advanced.NoneField;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;

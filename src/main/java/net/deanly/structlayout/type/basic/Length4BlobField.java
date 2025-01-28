@@ -7,7 +7,7 @@ public class Length4BlobField extends FieldBase<byte[]> implements BasicType, Dy
     private int length; // Blob 데이터의 길이
 
     public Length4BlobField() {
-        super(-1);
+        super(-1, byte[].class);
     }
 
     @Override

@@ -5,12 +5,8 @@ import net.deanly.structlayout.type.CountableField;
 
 public class Int8Field extends FieldBase<Short> implements CountableField<Short> {
 
-    public Int8Field(String property) {
-        super(1, property); // 1 byte
-    }
-
     public Int8Field() {
-        this(null);
+        super(1, Short.class); // 1 byte
     }
 
     @Override

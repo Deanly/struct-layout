@@ -4,8 +4,8 @@ import net.deanly.structlayout.type.FieldBase;
 
 public abstract class ValidationField<T> extends FieldBase<T> {
 
-    public ValidationField(int span, String property) {
-        super(span, property);
+    public ValidationField(int span) {
+        super(span);
     }
 
     @Override

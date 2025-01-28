@@ -4,7 +4,7 @@ import net.deanly.structlayout.Field;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.type.CountableField;
 import net.deanly.structlayout.type.FieldBase;
-import net.deanly.structlayout.type.basic.NoneField;
+import net.deanly.structlayout.type.advanced.NoneField;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -28,8 +28,8 @@ public abstract class ParentField<T> extends FieldBase<T> {
      * @param property An optional property name associated with the layout, which
      *                 can be used for debugging or mapping.
      */
-    public ParentField(int span, String property) {
-        super(span, property);
+    public ParentField(int span) {
+        super(span);
     }
 
     /**

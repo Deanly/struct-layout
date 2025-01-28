@@ -1,6 +1,7 @@
 package net.deanly.structlayout.type;
 
 import lombok.Getter;
+import lombok.Value;
 import net.deanly.structlayout.Field;
 
 import java.lang.reflect.ParameterizedType;
@@ -43,25 +44,29 @@ public abstract class FieldBase<T> implements Field<T> {
     private final int span; // Number of bytes for this layout
 
     /**
-     * An optional identifier or property name associated with this field.
-     * This can be useful for debugging or for mapping schema metadata.
+     * Represents the generic type of the value associated with this field.
+     * This field is used to store the type information for parameterized types, allowing
+     * runtime inspection and manipulation of the specific type {@code T}.
+     *
+     * <p>It is a generic type parameter defined at the class level that provides a mechanism
+     * to work with type-safe fields within the {@code FieldBase} structure. This plays a
+     * critical role in encoding and decoding operations, ensuring data consistency and
+     * type integrity.</p>
      */
-    private final String property; // Optional associated property name
+    private final Class<T> valueType;
+
 
     /**
-     * Constructs a Layout with a specified span and an optional property.
+     * Constructs a FieldBase object with a specified span and type.
      *
-     * @param span Number of bytes that this Layout will process.
-     *             **This value MUST be explicitly defined by the implementer.**
-     *             It is critical to define the span correctly, as it determines:
-     *               - The number of bytes this layout processes when encoding/decoding.
-     *               - Validation offsets during data processing.
-     * @param property Optional property name associated with the Layout.
-     *                 For example, this can be used for debugging or mapping.
+     * @param span  The number of bytes that this FieldBase will process.
+     *              **This value MUST be explicitly defined by the implementer.**
+     * @param clazz The {@code Class<T>} representing the type of data
+     *              this FieldBase will handle.
      */
-    public FieldBase(int span, String property) {
+    public FieldBase(int span, Class<T> clazz) {
         this.span = span;
-        this.property = property;
+        this.valueType = clazz;
     }
 
     /**
@@ -70,8 +75,12 @@ public abstract class FieldBase<T> implements Field<T> {
      * @param span Number of bytes that this Layout will process.
      *             **This value MUST be explicitly defined by the implementer.**
      */
+    @SuppressWarnings("unchecked")
     public FieldBase(int span) {
-        this(span, null);
+        ParameterizedType parameterizedType = (ParameterizedType) this.getClass().getGenericSuperclass();
+        Class<T> clazz = (Class<T>) parameterizedType.getActualTypeArguments()[0];
+        this.span = span;
+        this.valueType = clazz;
     }
 
     public abstract byte[] encode(T value);

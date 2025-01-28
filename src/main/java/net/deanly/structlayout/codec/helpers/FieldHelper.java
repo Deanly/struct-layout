@@ -143,6 +143,19 @@ public class FieldHelper {
         return fields;
     }
 
+    /**
+     * Determines whether a given field type (`structFieldType`) is applicable to a
+     * specified `Field` implementation type (`fieldType`).
+     *
+     * The method checks several conditions, such as if both types are numeric and match
+     * through conversion rules, or if the types are compatible as per the helper utilities.
+     *
+     * @param structFieldType the type of the struct's field to be examined
+     * @param fieldType the specific implementation class of {@code net.deanly.structlayout.Field<?>}
+     *                  to check compatibility with the struct field type
+     * @return {@code true} if the specified field type is applicable to the struct field type;
+     *         {@code false} otherwise
+     */
     public static boolean isFieldTypeApplicable(Class<?> structFieldType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
         // Field의 필드 타입 가져오기
         Class<?> dataTypeFieldType = FieldBase.getGenericTypeAsObject(fieldType);
@@ -164,7 +177,19 @@ public class FieldHelper {
     }
 
     /**
-     * 기본 배열과 Field의 구성 요소 타입을 매칭합니다.
+     * Determines whether a given primitive array type (`componentType`) matches
+     * the expected generic type of a `Field` implementation (`fieldType`).
+     *
+     * The method checks if the `componentType` is a primitive type and matches
+     * one of the predefined primitive-to-wrapper type pairs, such as `int` to
+     * `Integer`, `byte` to `Byte`, and so on. If a valid match is found, it
+     * returns {@code true}; otherwise, {@code false}.
+     *
+     * @param componentType the primitive component type of the array to be validated
+     * @param fieldType the class type of an implementation of {@code net.deanly.structlayout.Field<?>}
+     *                  used to determine the expected wrapper type
+     * @return {@code true} if the `componentType` is a primitive type and matches
+     *         the expected generic wrapper type of the specified `fieldType`;
      */
     public static boolean isPrimitiveArrayApplicable(Class<?> componentType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
         Class<?> expectedType = FieldBase.getGenericTypeAsObject(fieldType);
@@ -183,38 +208,23 @@ public class FieldHelper {
     }
 
     /**
-     * 특정 요소 타입과 Field의 예상 타입 매칭.
+     * Extracts the generic type parameter of a given layout class that extends {@code net.deanly.structlayout.Field<?>}.
+     * This method uses reflection to determine the actual generic type argument of the specified class.
+     *
+     * @param layoutClass the class extending {@code net.deanly.structlayout.Field<?>} for which the generic type
+     *                    parameter is to be extracted
+     * @return the {@code Class<?>} object representing the actual generic type parameter of the given layout class
+     * @throws IllegalArgumentException if the generic type cannot be extracted or if the provided class is not valid
      */
-    public static boolean isApplicableToDataType(Class<?> elementType, Class<? extends net.deanly.structlayout.Field<?>> fieldType) {
-        Class<?> expectedType = FieldBase.getGenericTypeAsObject(fieldType);
-        return elementType.equals(expectedType);
-    }
-
-    public static boolean isFieldTypeCompatible(Class<?> structFieldType, Class<?> dataTypeFieldType) {
-        if (structFieldType == dataTypeFieldType) {
-            return true; // 정확히 일치하는 타입
+    public static Class<?> extractLayoutGenericType(Class<? extends net.deanly.structlayout.Field<?>> layoutClass) {
+        // 기본적인 제네릭 추출
+        try {
+            return (Class<?>) ((java.lang.reflect.ParameterizedType) layoutClass
+                    .getGenericSuperclass()).getActualTypeArguments()[0];
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    String.format("Unable to extract generic type from Layout class '%s'", layoutClass.getName()), e
+            );
         }
-
-        // 데이터 타입 크기 비교 (작으면 불일치로 간주)
-        if (isNumericType(structFieldType) && isNumericType(dataTypeFieldType)) {
-            int structFieldSize = getTypeSize(structFieldType);
-            int dataTypeFieldSize = getTypeSize(dataTypeFieldType);
-            return structFieldSize >= dataTypeFieldSize;
-        }
-
-        // 예외: 문자열 등 기타 호환되지 않는 항목
-        return false;
     }
-
-    private static int getTypeSize(Class<?> type) {
-        if (type == Byte.class || type == byte.class) return 1;
-        if (type == Short.class || type == short.class) return 2;
-        if (type == Integer.class || type == int.class) return 4;
-        if (type == Long.class || type == long.class) return 8;
-        if (type == Float.class || type == float.class) return 4;
-        if (type == Double.class || type == double.class) return 8;
-        if (type == java.math.BigInteger.class) return 16; // 일반적으로 BigInteger는 16바이트 이상
-        return 0; // 크기 비교 불가능한 타입
-    }
-
 }

@@ -10,8 +10,8 @@ public class OffsetField<T> extends FieldBase<T> implements DynamicSpanField {
     private final int offset;
     private int span;
 
-    public OffsetField(FieldBase<T> field, int offset, String property) {
-        super(field instanceof DynamicSpanField ? -1 : field.getSpan(), property); // Dynamic Span 지원
+    public OffsetField(FieldBase<T> field, int offset) {
+        super(field instanceof DynamicSpanField ? -1 : field.getSpan(), field.getValueType());
         if (field == null) {
             throw new IllegalArgumentException("Base layout must not be null.");
         }

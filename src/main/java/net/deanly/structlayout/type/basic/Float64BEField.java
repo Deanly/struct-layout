@@ -6,15 +6,9 @@ public class Float64BEField extends FieldBase<Double> implements BasicType {
 
     /**
      * Constructs a layout for a 64-bit floating-point number in big-endian format.
-     *
-     * @param property (Optional) - The property name associated with this layout.
      */
-    public Float64BEField(String property) {
-        super(8, property);
-    }
-
     public Float64BEField() {
-        this(null);
+        super(8, Double.class);
     }
 
     /**

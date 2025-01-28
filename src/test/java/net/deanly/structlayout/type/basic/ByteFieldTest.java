@@ -16,17 +16,6 @@ class ByteFieldTest {
         // 기본 생성자 테스트
         ByteField layout = new ByteField();
         assertNotNull(layout);
-        assertNull(layout.getProperty()); // 기본 생성자 호출 시, property는 null이어야 함
-        assertEquals(1, layout.getSpan()); // 스팬은 항상 1이어야 함
-    }
-
-    @Test
-    void testParameterizedConstructor() {
-        // 매개변수 생성자 테스트
-        String testProperty = "testProperty";
-        ByteField layout = new ByteField(testProperty);
-        assertNotNull(layout);
-        assertEquals(testProperty, layout.getProperty()); // 생성된 객체의 property 값 확인
         assertEquals(1, layout.getSpan()); // 스팬은 항상 1이어야 함
     }
 

@@ -4,7 +4,7 @@ import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceObjectField;
 import net.deanly.structlayout.type.basic.Int32BEField;
 import net.deanly.structlayout.type.basic.UInt8Field;
-import net.deanly.structlayout.type.basic.NoneField;
+import net.deanly.structlayout.type.advanced.NoneField;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

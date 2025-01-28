@@ -9,12 +9,8 @@ public class UInt64BEField extends FieldBase<BigInteger> implements CountableFie
 
     private static final BigInteger UINT64_MAX = new BigInteger("18446744073709551615");
 
-    public UInt64BEField(String property) {
-        super(8, property);
-    }
-
     public UInt64BEField() {
-        this(null);
+        super(8, BigInteger.class);
     }
 
     @Override

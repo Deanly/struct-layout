@@ -5,12 +5,8 @@ import net.deanly.structlayout.type.CountableField;
 
 public class Int16BEField extends FieldBase<Short> implements CountableField<Short> {
 
-    public Int16BEField(String property) {
-        super(2, property); // 2 bytes
-    }
-
     public Int16BEField() {
-        this(null);
+        super(2, Short.class); // 2 bytes
     }
 
     @Override

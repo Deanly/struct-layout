@@ -4,12 +4,8 @@ import net.deanly.structlayout.type.FieldBase;
 
 public class UCharCField extends FieldBase<Integer> implements BasicType {
 
-    public UCharCField(String property) {
-        super(1, property);
-    }
-
     public UCharCField() {
-        this(null);
+        super(1, Integer.class);
     }
 
     @Override

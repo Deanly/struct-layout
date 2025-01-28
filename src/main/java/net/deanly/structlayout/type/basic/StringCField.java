@@ -72,7 +72,7 @@ public class StringCField extends FieldBase<String> implements DynamicSpanField,
      */
     // 특정 인코딩을 사용하는 C 문자열 처리
     public StringCField(Charset charset) {
-        super(-1); // 문자열 길이를 결정할 수 없으므로 Span은 동적으로 처리.
+        super(-1, String.class); // 문자열 길이를 결정할 수 없으므로 Span은 동적으로 처리.
         this.charset = charset;
     }
 

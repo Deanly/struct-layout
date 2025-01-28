@@ -75,7 +75,7 @@ public class CustomFieldTest {
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> StructLayout.encode(struct));
-        assertTrue(exception.getMessage().contains("PublicKey must be exactly"), "Exception message should contain 'PublicKey must be exactly'");
+        assertTrue(exception.getMessage().contains("PublicKey value cannot be null"), "Exception message should contain 'PublicKey value cannot be null'");
     }
 
     @Test

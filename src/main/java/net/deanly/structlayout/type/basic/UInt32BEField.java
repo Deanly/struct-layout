@@ -5,12 +5,8 @@ import net.deanly.structlayout.type.CountableField;
 
 public class UInt32BEField extends FieldBase<Long> implements CountableField<Long> {
 
-    public UInt32BEField(String property) {
-        super(4, property);
-    }
-
     public UInt32BEField() {
-        this(null);
+        super(4, Long.class);
     }
 
     /**

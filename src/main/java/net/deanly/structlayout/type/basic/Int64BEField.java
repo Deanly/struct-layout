@@ -7,15 +7,9 @@ public class Int64BEField extends FieldBase<Long> implements CountableField<Long
 
     /**
      * Constructs a Int64BE layout for signed 64-bit integers in big-endian format.
-     *
-     * @param property (Optional) Property name associated with this layout.
      */
-    public Int64BEField(String property) {
-        super(8, property);
-    }
-
     public Int64BEField() {
-        this(null);
+        super(8, Long.class);
     }
 
     /**

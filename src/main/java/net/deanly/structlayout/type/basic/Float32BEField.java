@@ -6,15 +6,9 @@ public class Float32BEField extends FieldBase<Float> implements BasicType {
 
     /**
      * Constructs a layout for a 32-bit floating-point number in big-endian format.
-     *
-     * @param property (Optional) The property name associated with this layout.
      */
-    public Float32BEField(String property) {
-        super(4, property);
-    }
-
     public Float32BEField() {
-        this(null);
+        super(4, Float.class);
     }
 
     /**

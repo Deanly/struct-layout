@@ -11,16 +11,6 @@ class CharCFieldTest {
         // 기본 생성자 테스트
         CharCField layout = new CharCField();
         assertNotNull(layout);
-        assertNull(layout.getProperty()); // 기본 생성자 호출 시 property는 null이어야 함
-    }
-
-    @Test
-    void testParameterizedConstructor() {
-        // 매개변수 생성자 테스트
-        String testProperty = "testProperty";
-        CharCField layout = new CharCField(testProperty);
-        assertNotNull(layout);
-        assertEquals(testProperty, layout.getProperty()); // 생성된 객체의 property 값 확인
     }
 
     @Test

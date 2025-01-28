@@ -11,18 +11,7 @@ class Float32BEFieldTest {
         // 기본 생성자 테스트
         Float32BEField layout = new Float32BEField();
         assertNotNull(layout);
-        assertNull(layout.getProperty()); // 기본 생성자 호출 시 property는 null이어야 함
         assertEquals(4, layout.getSpan()); // 32비트 float는 4바이트 길이
-    }
-
-    @Test
-    void testParameterizedConstructor() {
-        // 매개변수 생성자 테스트
-        String testProperty = "testProperty";
-        Float32BEField layout = new Float32BEField(testProperty);
-        assertNotNull(layout);
-        assertEquals(testProperty, layout.getProperty());
-        assertEquals(4, layout.getSpan());
     }
 
     @Test

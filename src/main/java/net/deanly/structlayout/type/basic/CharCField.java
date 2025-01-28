@@ -4,12 +4,8 @@ import net.deanly.structlayout.type.FieldBase;
 
 public class CharCField extends FieldBase<Byte> implements BasicType {
 
-    public CharCField(String property) {
-        super(1, property);
-    }
-
     public CharCField() {
-        this(null);
+        super(1, Byte.class);
     }
 
     @Override
