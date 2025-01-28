@@ -70,6 +70,10 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         int elementCount = 0;
         while ((unsafeMode && currentOffset < data.length) || (!unsafeMode && elementCount < length)) {
             Object rawElement = elementField.decode(data, currentOffset);
+            if (rawElement == null) {
+                elementCount++;
+                continue;
+            }
             Object convertedElement = TypeConverterHelper.convertToType(rawElement, elementType);
 
             if (fieldType.isArray() && !unsafeMode) {
