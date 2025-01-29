@@ -40,7 +40,7 @@ And include the dependency in your `pom.xml`:
     <dependency>
         <groupId>net.deanly</groupId>
         <artifactId>struct-layout</artifactId>
-        <version>0.2.1</version>
+        <version>0.3.0</version>
     </dependency>
 </dependencies>
 ```
@@ -50,7 +50,7 @@ Add the GitHub repository to your `build.gradle` file:
 
 ```gradle
 dependencies {
-    implementation 'net.deanly:struct-layout:0.2.1'
+    implementation 'net.deanly:struct-layout:0.3.0'
 }
 ```
 
