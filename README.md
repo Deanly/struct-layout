@@ -5,9 +5,24 @@
 [![Maven Central](https://img.shields.io/maven-central/v/net.deanly/struct-layout.svg?color=008080)](https://central.sonatype.com/artifact/net.deanly/struct-layout)
 ![Runtime Dependencies](https://img.shields.io/badge/runtime%20dependencies-none-brightgreen.svg)
 
-StructLayout is a Java library designed to simplify working with **binary data** using structured layouts. It allows you to easily encode/decode complex data structures into/from byte arrays by just defining a `Struct` class with simple annotations.
 
-With StructLayout, managing structured binary data—common in file processing, network protocols, and serialization—becomes straightforward and intuitive.
+StructLayout is a **flexible binary serialization library for Java**,  
+designed to simplify encoding and decoding of structured binary data.  
+With an annotation-based approach, StructLayout allows you to define complex binary structures effortlessly.  
+It is ideal for use cases such as **file processing, network protocols, blockchain data (e.g., Solana Borsh), and custom serialization formats**.
+
+### 🚀 Key Goals
+- **Borsh and Beyond**: Supports Borsh serialization along with other binary serialization formats.
+- **TLV (Type-Length-Value) Compatibility**: Provides TLV support for seamless integration with external systems.
+- **Fixed-Length Array Support**: Enables defining structured binary data with fixed-size arrays.
+- **Improved Optional Field Handling**: Enhances flexibility in handling nullable fields for better usability.
+
+StructLayout is designed to be **efficient, extensible, and easy to integrate** into any system requiring structured binary data serialization.
+
+🔔 **Versioning Notice**  
+StructLayout is under active development and may undergo structural changes until version **1.0.0** is released.  
+**Minor versions will be incremented for any structural modifications**, ensuring clear versioning consistency.  
+Once all Key Goals are met, StructLayout will be officially released as **version 1.0.0**.
 
 ---
 
