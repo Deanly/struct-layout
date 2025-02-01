@@ -101,12 +101,13 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         // 2. 길이 및 요소 타입 메타데이터 조회
         Class<? extends CountableField<?>> lengthType = annotation.lengthType();
         Class<? extends Field<?>> elementFieldType = annotation.elementType();
+        boolean unsafeMode = NoneField.class.isAssignableFrom(lengthType);
 
         // 3. 필드 값 추출
         Object arrayOrList = extractFieldValue(instance, field);
         if (arrayOrList == null) {
             int length = 0; // 길이는 0으로 설정
-            return debugLengthAndElements(field, length, new ArrayList<>(), lengthType, elementFieldType);
+            return debugLengthAndElements(field, new ArrayList<>(), lengthType, elementFieldType, unsafeMode);
         }
 
         // 5. 배열 또는 List인지 확인, 아니면 예외 발생
@@ -126,24 +127,26 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         }
 
         // 6. 길이와 요소 병합 처리
-        return debugLengthAndElements(field, elements.size(), elements, lengthType, elementFieldType);
+        return debugLengthAndElements(field, elements, lengthType, elementFieldType, unsafeMode);
     }
 
     private List<FieldDebugInfo.Builder> debugLengthAndElements(
             java.lang.reflect.Field field,
-            int length,
             List<Object> elements,
             Class<? extends CountableField<?>> lengthType,
-            Class<? extends Field<?>> elementFieldType
+            Class<? extends Field<?>> elementFieldType,
+            boolean unsafeMode
     ) {
         List<FieldDebugInfo.Builder> builders = new ArrayList<>();
         try {
-            Object convertedLength = TypeConverterHelper.convertToLayoutType(length, lengthType);
-            byte[] encodedLength = encodeElement(lengthType, convertedLength);
-            builders.add(FieldDebugInfo.builder()
-                    .orderSuffix("[].length")
-                    .fieldName(field.getName())
-                    .encodedBytes(encodedLength));
+            if (!unsafeMode) {
+                Object convertedLength = TypeConverterHelper.convertToLayoutType(elements.size(), lengthType);
+                byte[] encodedLength = encodeElement(lengthType, convertedLength);
+                builders.add(FieldDebugInfo.builder()
+                        .orderSuffix("[].length")
+                        .fieldName(field.getName())
+                        .encodedBytes(encodedLength));
+            }
 
             for (int i = 0; i < elements.size(); i++) {
                 Object convertedElement = TypeConverterHelper.convertToLayoutType(elements.get(i), elementFieldType);

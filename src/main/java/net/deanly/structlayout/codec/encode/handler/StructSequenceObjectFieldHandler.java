@@ -105,10 +105,11 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
 
         // 3. 길이 타입 메타데이터 조회
         Class<? extends CountableField<?>> lengthType = annotation.lengthType();
+        boolean unsafeMode = NoneField.class.isAssignableFrom(lengthType);
 
         // 4. Null 처리
         if (arrayOrList == null) {
-            return debugLengthAndElements(field, 0, new ArrayList<>(), lengthType);
+            return debugLengthAndElements(field, new ArrayList<>(), lengthType, unsafeMode);
         }
 
         // 5. 배열 또는 List 인지 확인
@@ -128,25 +129,27 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
         }
 
         // 6. 인코딩
-        return debugLengthAndElements(field, elements.size(), elements, lengthType);
+        return debugLengthAndElements(field, elements, lengthType, unsafeMode);
     }
 
     private List<FieldDebugInfo.Builder> debugLengthAndElements(
             java.lang.reflect.Field field,
-            int length,
             List<Object> elements,
-            Class<? extends CountableField<?>> lengthType
+            Class<? extends CountableField<?>> lengthType,
+            boolean unsafeMode
     ) {
         List<FieldDebugInfo.Builder> builders = new ArrayList<>();
         try {
-            // 길이 인코딩
-            Field<Object> lengthField = resolveLayout(lengthType);
-            Object convertedLength = TypeConverterHelper.convertToLayoutType(length, lengthType);
-            byte[] encodedLenth = lengthField.encode(convertedLength);
-            builders.add(FieldDebugInfo.builder()
-                    .orderSuffix("[].length")
-                    .fieldName(field.getName())
-                    .encodedBytes(encodedLenth));
+            if (!unsafeMode) {
+                // 길이 인코딩
+                Field<Object> lengthField = resolveLayout(lengthType);
+                Object convertedLength = TypeConverterHelper.convertToLayoutType(elements.size(), lengthType);
+                byte[] encodedLenth = lengthField.encode(convertedLength);
+                builders.add(FieldDebugInfo.builder()
+                        .orderSuffix("[].length")
+                        .fieldName(field.getName())
+                        .encodedBytes(encodedLenth));
+            }
 
             // 요소 인코딩
             for (int i = 0; i < elements.size(); i++) {

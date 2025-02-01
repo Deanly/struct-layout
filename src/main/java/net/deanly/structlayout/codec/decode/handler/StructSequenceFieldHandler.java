@@ -70,18 +70,6 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         int elementCount = 0;
         while ((unsafeMode && currentOffset < data.length) || (!unsafeMode && elementCount < length)) {
             Object rawElement = elementField.decode(data, currentOffset);
-            if (rawElement == null) {
-                elementCount++;
-                continue;
-            }
-            Object convertedElement = TypeConverterHelper.convertToType(rawElement, elementType);
-
-            if (fieldType.isArray() && !unsafeMode) {
-                Array.set(result, elementCount, convertedElement);
-            } else {
-                ((Collection<Object>) result).add(convertedElement);
-            }
-            elementCount++;
 
             int expectedSpan;
             if (elementField instanceof DynamicSpanField) {
@@ -102,6 +90,17 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
             }
 
             currentOffset += expectedSpan;
+
+            if (rawElement != null) {
+                Object convertedElement = TypeConverterHelper.convertToType(rawElement, elementType);
+
+                if (fieldType.isArray() && !unsafeMode) {
+                    Array.set(result, elementCount, convertedElement);
+                } else {
+                    ((Collection<Object>) result).add(convertedElement);
+                }
+            }
+            elementCount++;
         }
 
         // 6. 필드 값 설정
