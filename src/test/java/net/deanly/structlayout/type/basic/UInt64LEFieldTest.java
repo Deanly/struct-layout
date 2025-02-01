@@ -1,11 +1,15 @@
 package net.deanly.structlayout.type.basic;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import net.deanly.structlayout.StructLayout;
 import net.deanly.structlayout.annotation.StructField;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -144,5 +148,26 @@ class UInt64LEFieldTest {
             BigInteger decoded = layout.decode(encoded, 0);
             assertEquals(value, decoded, "Decoded value should match the original edge case value");
         }
+    }
+
+    @Test
+    void testMaxValue() {
+        byte[] data = new byte[16];
+        ByteBuffer buffer = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
+        buffer.putLong(0, 0xFFFFFFFFFFFFFFFFL);
+        buffer.putLong(8, 0xFFFFFFFFFFFFFFFFL);
+
+        TestLEStruct struct = StructLayout.decode(data, TestLEStruct.class);
+        StructLayout.debug(data);
+        StructLayout.debug(struct);
+    }
+
+    @Getter
+    @Setter
+    public static class TestLEStruct {
+        @StructField(order = 1, type = UInt64LEField.class)
+        private BigInteger value1;
+        @StructField(order = 2, type = UInt64LEField.class)
+        private long value2;
     }
 }

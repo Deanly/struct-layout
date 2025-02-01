@@ -7,7 +7,7 @@ import java.math.BigInteger;
 
 public class UInt64LEField extends FieldBase<BigInteger> implements CountableField<BigInteger> {
 
-    private static final BigInteger UINT64_MAX = new BigInteger("18446744073709551615");
+    public static final BigInteger UINT64_MAX = new BigInteger("18446744073709551615");
 
     public UInt64LEField() {
         super(8, BigInteger.class);
@@ -34,7 +34,7 @@ public class UInt64LEField extends FieldBase<BigInteger> implements CountableFie
     @Override
     public byte[] encode(BigInteger value) {
         if (value == null || value.compareTo(BigInteger.ZERO) < 0 || value.compareTo(UINT64_MAX) > 0) {
-            throw new IllegalArgumentException("Value must not be negative or exceed unsigned 64-bit integer range.");
+            throw new IllegalArgumentException("Value must not be negative or exceed unsigned 64-bit integer range." + value);
         }
 
         byte[] data = new byte[8]; // Allocate memory for a 64-bit integer
