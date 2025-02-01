@@ -1,9 +1,9 @@
-package net.deanly.structlayout.type.basic;
+package net.deanly.structlayout.type.borsh;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class Length4BlobFieldTest {
+class BorshBlobFieldTest {
 
     @Test
     void testEncodeAndDecode() {
@@ -11,11 +11,11 @@ class Length4BlobFieldTest {
         byte[] inputData = "Hello, Length-Prefixed Blob!".getBytes(); // 임의 데이터
 
         // 첫 번째 인스턴스를 통해 데이터 encode
-        Length4BlobField encoder = new Length4BlobField();
+        BorshBlobField encoder = new BorshBlobField();
         byte[] encodedData = encoder.encode(inputData);
 
         // 두 번째 인스턴스를 통해 데이터 decode
-        Length4BlobField decoder = new Length4BlobField();
+        BorshBlobField decoder = new BorshBlobField();
         byte[] decodedData = decoder.decode(encodedData, 0);
 
         // 검증
@@ -36,14 +36,14 @@ class Length4BlobFieldTest {
         byte[] inputData = new byte[0];
 
         // Encode
-        Length4BlobField encoder = new Length4BlobField();
+        BorshBlobField encoder = new BorshBlobField();
         byte[] encodedData = encoder.encode(inputData);
 
         // 검증: 인코딩된 데이터는 최소 4바이트 (길이 필드)여야 합니다.
         assertEquals(4, encodedData.length, "Encoded data for empty input should contain length field");
 
         // Decode
-        Length4BlobField decoder = new Length4BlobField();
+        BorshBlobField decoder = new BorshBlobField();
         byte[] decodedData = decoder.decode(encodedData, 0);
 
         // 검증: 디코딩된 데이터는 빈 배열이어야 함.
@@ -55,7 +55,7 @@ class Length4BlobFieldTest {
         // 인코딩된 데이터가 잘못된 경우 (길이가 부족한 경우)
         byte[] invalidData = { 0, 0, 0, 10 }; // Length는 10이지만 실제 Value는 없도록 설계
 
-        Length4BlobField decoder = new Length4BlobField();
+        BorshBlobField decoder = new BorshBlobField();
 
         // 예외 발생 확인
         assertThrows(IllegalArgumentException.class, () -> decoder.decode(invalidData, 0),
@@ -73,12 +73,12 @@ class Length4BlobFieldTest {
         System.arraycopy(prefixData, 0, fullData, 0, prefixData.length);
 
         // LengthPrefixedBlobField를 이용해 중앙 부분에 데이터 추가 (Offset 사용)
-        Length4BlobField encoder = new Length4BlobField();
+        BorshBlobField encoder = new BorshBlobField();
         byte[] encodedData = encoder.encode(inputData);
         System.arraycopy(encodedData, 0, fullData, prefixData.length, encodedData.length);
 
         // Decode 시 사용할 인스턴스
-        Length4BlobField decoder = new Length4BlobField();
+        BorshBlobField decoder = new BorshBlobField();
         byte[] decodedData = decoder.decode(fullData, prefixData.length);
 
         // 검증

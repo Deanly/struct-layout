@@ -1,12 +1,13 @@
-package net.deanly.structlayout.type.basic;
+package net.deanly.structlayout.type.borsh;
 
 import net.deanly.structlayout.type.DynamicSpanField;
 import net.deanly.structlayout.type.FieldBase;
+import net.deanly.structlayout.type.basic.BasicType;
 
-public class Length4BlobField extends FieldBase<byte[]> implements BasicType, DynamicSpanField {
+public class BorshBlobField extends FieldBase<byte[]> implements BasicType, DynamicSpanField {
     private int length; // Blob 데이터의 길이
 
-    public Length4BlobField() {
+    public BorshBlobField() {
         super(-1, byte[].class);
     }
 

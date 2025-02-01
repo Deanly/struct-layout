@@ -1,4 +1,4 @@
-package net.deanly.structlayout.type.advanced;
+package net.deanly.structlayout.type.borsh;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,28 +16,28 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class COptionFieldTest {
 
-    public static class UInt8OptionField extends AbstractCOptionField<Short, UInt8Field> {
+    public static class UInt8OptionField extends AbstractBorshOptionField<Short, UInt8Field> {
         @Override
         protected UInt8Field createField() {
             return new UInt8Field();
         }
     }
 
-    public static class UInt64LEOptionField extends AbstractCOptionField<BigInteger, UInt64LEField> {
+    public static class UInt64LEOptionField extends AbstractBorshOptionField<BigInteger, UInt64LEField> {
         @Override
         protected UInt64LEField createField() {
             return new UInt64LEField();
         }
     }
 
-    public static class Int32OptionField extends AbstractCOptionField<Integer, Int32LEField> {
+    public static class Int32OptionField extends AbstractBorshOptionField<Integer, Int32LEField> {
         @Override
         protected Int32LEField createField() {
             return new Int32LEField();
         }
     }
 
-    public static class StringCOptionField extends AbstractCOptionField<String, StringCField> {
+    public static class StringBorshOptionField extends AbstractBorshOptionField<String, StringCField> {
         @Override
         protected StringCField createField() {
             return new StringCField();
@@ -56,7 +56,7 @@ public class COptionFieldTest {
         @StructField(order = 3, type = UInt64LEOptionField.class)
         private BigInteger optionalUInt64Value;
 
-        @StructField(order = 4, type = StringCOptionField.class)
+        @StructField(order = 4, type = StringBorshOptionField.class)
         private String message;
     }
 
@@ -223,7 +223,7 @@ public class COptionFieldTest {
 
     @Test
     public void testStringOptionFieldHandling() {
-        StringCOptionField field = new StringCOptionField();
+        StringBorshOptionField field = new StringBorshOptionField();
 
         // Valid string test
         String originalValue = "TestString";

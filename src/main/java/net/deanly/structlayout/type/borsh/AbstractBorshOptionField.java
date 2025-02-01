@@ -1,4 +1,4 @@
-package net.deanly.structlayout.type.advanced;
+package net.deanly.structlayout.type.borsh;
 
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.type.DynamicSpanField;
@@ -132,9 +132,9 @@ import net.deanly.structlayout.type.FieldBase;
  * assertEquals(struct.getOptionalMessage(), decoded.getOptionalMessage());
  * }</pre>
  */
-public abstract class AbstractCOptionField<T, F extends FieldBase<T>> extends FieldBase<T> implements DynamicSpanField {
+public abstract class AbstractBorshOptionField<T, F extends FieldBase<T>> extends FieldBase<T> implements DynamicSpanField {
 
-    public AbstractCOptionField() {
+    public AbstractBorshOptionField() {
         super(1);
     }
 
