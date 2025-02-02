@@ -4,6 +4,7 @@ import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.codec.encode.handler.*;
 import net.deanly.structlayout.codec.helpers.FieldHelper;
+import net.deanly.structlayout.dispatcher.StructTypeResolver;
 import net.deanly.structlayout.exception.FieldAccessException;
 import net.deanly.structlayout.exception.StructParsingException;
 import net.deanly.structlayout.exception.TypeConversionException;
@@ -11,6 +12,7 @@ import net.deanly.structlayout.exception.TypeConversionException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class FieldProcessor {
@@ -37,7 +39,7 @@ public class FieldProcessor {
                     throw new TypeConversionException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 } catch (StructParsingException e) {
                     throw e;
-                } catch (RuntimeException e) {
+                } catch (RuntimeException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
                     throw new StructParsingException("Failed to process field: `" + field.getName() + "` => " + e.getMessage(), e);
                 }
             }
@@ -55,13 +57,21 @@ public class FieldProcessor {
 
                     if (field.isAnnotationPresent(StructObjectField.class)) {
                         Object childInstance = field.get(instance);
+
+                        Class<?> fieldType = field.getType();
+                        if ((fieldType.isInterface() || java.lang.reflect.Modifier.isAbstract(fieldType.getModifiers()))
+                                && childInstance != null) {
+                            fieldType = childInstance.getClass();
+                        }
+
                         if (childInstance != null) {
-                            Field[] childFields = childInstance.getClass().getDeclaredFields();
+                            Field[] childFields = fieldType.getDeclaredFields();
                             for (Field childField : childFields) {
                                 childField.setAccessible(true);
                                 debugInfos.addAll(processFieldRecursivelyWithDebug(childInstance, childField, order));
                             }
                         }
+
                     }
                     else if (field.isAnnotationPresent(StructSequenceObjectField.class)) {
                         List<FieldDebugInfo.Builder> builders = entry.getValue().handleDebug(instance, field);

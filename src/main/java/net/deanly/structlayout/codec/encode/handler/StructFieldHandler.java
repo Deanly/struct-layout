@@ -6,6 +6,7 @@ import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.codec.helpers.FieldHelper;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.CustomLayoutInstantiationException;
+import net.deanly.structlayout.type.DynamicSpanField;
 
 import java.util.List;
 
@@ -13,10 +14,7 @@ public class StructFieldHandler extends BaseFieldHandler {
 
     @Override
     public <T> byte[] handleField(T instance, java.lang.reflect.Field field) throws IllegalAccessException {
-        // 1. 필드 값 추출
-        Object fieldValue = extractFieldValue(instance, field);
-
-        // 2. @CustomLayoutField 어노테이션 확인
+        // @CustomLayoutField 어노테이션 확인
         StructField annotation = field.getAnnotation(StructField.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
@@ -24,17 +22,30 @@ public class StructFieldHandler extends BaseFieldHandler {
             );
         }
 
-        // 3. Layout 클래스에서 Layout 인스턴스를 생성
+        // 필드 값 추출
+        Object fieldValue = extractFieldValue(instance, field);
+
+        // Layout 클래스에서 Layout 인스턴스를 생성
         Class<? extends Field<?>> layoutClass = annotation.type();
         Field<Object> fieldInstance = createLayoutInstance(layoutClass, field.getName());
 
-        // 4. Layout의 제네릭 타입 추출
+        // Null 처리
+        if (fieldValue == null) {
+            var layout = resolveLayout(annotation.type());
+            if (layout instanceof DynamicSpanField) {
+                return new byte[((DynamicSpanField) layout).getNoDataSpan()];
+            } else {
+                return new byte[layout.getSpan()];
+            }
+        }
+
+        // Layout의 제네릭 타입 추출
         Class<?> genericType = FieldHelper.extractLayoutGenericType(layoutClass);
 
-        // 5. TypeConverter를 통해 값 변환
+        // TypeConverter를 통해 값 변환
         Object convertedValue = TypeConverterHelper.convertToType(fieldValue, genericType);
 
-        // 6. Layout을 이용해 값 인코딩
+        // Layout을 이용해 값 인코딩
         return fieldInstance.encode(convertedValue);
     }
 
@@ -50,15 +61,16 @@ public class StructFieldHandler extends BaseFieldHandler {
     /**
      * 사용자 정의 Layout 인스턴스 생성
      */
-    @SuppressWarnings("unchecked")
+//    @SuppressWarnings("unchecked")
     private Field<Object> createLayoutInstance(Class<? extends Field<?>> layoutClass, String fieldName) {
-        try {
-            return (Field<Object>) layoutClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new CustomLayoutInstantiationException(
-                    String.format("Failed to instantiate custom layout '%s' for field '%s'", layoutClass.getName(), fieldName),
-                    e
-            );
-        }
+        return resolveLayout(layoutClass);
+//        try {
+//            return (Field<Object>) layoutClass.getDeclaredConstructor().newInstance();
+//        } catch (Exception e) {
+//            throw new CustomLayoutInstantiationException(
+//                    String.format("Failed to instantiate custom layout '%s' for field '%s'", layoutClass.getName(), fieldName),
+//                    e
+//            );
+//        }
     }
 }

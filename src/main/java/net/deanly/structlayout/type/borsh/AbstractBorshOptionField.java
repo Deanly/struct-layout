@@ -208,4 +208,9 @@ public abstract class AbstractBorshOptionField<T, F extends FieldBase<T>> extend
     public int getSpan() {
         throw new UnsupportedOperationException("AbstractCOptionField does not have a fixed span.");
     }
+
+    @Override
+    public int getNoDataSpan() {
+        return 1;
+    }
 }

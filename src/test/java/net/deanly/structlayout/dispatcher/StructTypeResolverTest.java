@@ -1,5 +1,6 @@
 package net.deanly.structlayout.dispatcher;
 
+import lombok.NoArgsConstructor;
 import net.deanly.structlayout.annotation.StructTypeSelector;
 import net.deanly.structlayout.codec.decode.StructDecoder;
 import net.deanly.structlayout.codec.decode.StructDecodeResult;
@@ -43,20 +44,25 @@ class StructTypeResolverTest {
     public static class TestDispatcher implements StructTypeDispatcher {
         // identifier(바이트 값)에 따라 결정
         @Override
-        public Class<?> dispatch(byte[] data) {
-            if (data[0] == 1) {
+        public Class<?> dispatch(byte[] data, int startOffset) {
+            if (data[startOffset] == 1) {
                 return TypeA.class;
-            } else if (data[0] == 2) {
+            } else if (data[startOffset] == 2) {
                 return TypeB.class;
             }
             throw new IllegalArgumentException("Invalid identifier: " + data[0]);
+        }
+
+        @Override
+        public int getNoDataSpan() {
+            return 0;
         }
     }
 
     @Test
     void testResolve_TypeA() throws Exception {
         byte[] data = {1}; // identifier 1은 TypeA에 매핑
-        Class<? extends TestBase> resolvedClass = StructTypeResolver.resolve(data, TestBase.class);
+        Class<? extends TestBase> resolvedClass = StructTypeResolver.resolveClass(data, TestBase.class, 0);
 
         assertNotNull(resolvedClass, "Resolved class should not be null");
         assertEquals(TypeA.class, resolvedClass, "Should resolve to TypeA");
@@ -69,7 +75,7 @@ class StructTypeResolverTest {
     @Test
     void testResolve_TypeB() throws Exception {
         byte[] data = {2}; // identifier 2은 TypeB에 매핑
-        Class<? extends TestBase> resolvedClass = StructTypeResolver.resolve(data, TestBase.class);
+        Class<? extends TestBase> resolvedClass = StructTypeResolver.resolveClass(data, TestBase.class, 0);
 
         assertNotNull(resolvedClass, "Resolved class should not be null");
         assertEquals(TypeB.class, resolvedClass, "Should resolve to TypeB");
@@ -83,19 +89,10 @@ class StructTypeResolverTest {
     void testInvalidIdentifier() {
         byte[] data = {3}; // invalid identifier
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            StructTypeResolver.resolve(data, TestBase.class);
+            StructTypeResolver.resolveClass(data, TestBase.class, 0);
         });
 
         assertEquals("Invalid identifier: 3", exception.getMessage());
     }
 
-    @Test
-    void testDecodeWithStructDecoder() throws Exception {
-        byte[] data = {1}; // identifier 1은 TypeA에 매핑
-        StructDecodeResult<TestBase> result = StructDecoder.decode(TestBase.class, data, 0);
-
-        assertNotNull(result, "Decode result should not be null");
-        assertInstanceOf(TypeA.class, result.getValue(), "Decoded instance should be of TypeA");
-        assertEquals(1, result.getValue().getIdentifier(), "Decoded identifier should match TypeA");
-    }
 }

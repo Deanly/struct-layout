@@ -1,7 +1,5 @@
 package net.deanly.structlayout.codec.helpers;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 
 /**

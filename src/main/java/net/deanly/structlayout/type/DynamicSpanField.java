@@ -9,18 +9,12 @@ public interface DynamicSpanField {
      * @return The dynamically calculated span.
      */
     int calculateSpan(byte[] data, int offset);
-//
-//    /**
-//     * Retrieves the current span value.
-//     *
-//     * @return The current span value as an integer.
-//     */
-//    int getSpan();
-//
-//    /**
-//     * Sets the span value for the current instance.
-//     *
-//     * @param span The span value to be set, represented as an integer.
-//     */
-//    void setSpan(int span);
+
+    /**
+     * Retrieves the minimum span size that the field occupies when no data is present.
+     *
+     * @return The minimum span size representing the space occupied by the field in the absence of data.
+     */
+    int getNoDataSpan();
+
 }

@@ -27,6 +27,11 @@ public class OffsetField<T> extends FieldBase<T> implements DynamicSpanField {
     }
 
     @Override
+    public int getNoDataSpan() {
+        return 0;
+    }
+
+    @Override
     public T decode(byte[] data, int currentOffset) {
         int adjustedOffset = currentOffset + this.offset;
         if (adjustedOffset < 0 || adjustedOffset >= data.length) {

@@ -33,12 +33,16 @@ public class BorshStringField extends FieldBase<String> implements DynamicSpanFi
                 ((data[offset + 2] & 0xFF) << 16) | ((data[offset + 3] & 0xFF) << 24));
         offset += 4;
 
-        if (length != data.length - offset) {
-            throw new IllegalArgumentException("String length does not match data length.");
-        }
 
         // 문자열 데이터 읽기
-        return new String(data, offset, length, StandardCharsets.UTF_8);
+        if (length == 0) {
+            return "";
+        } else {
+            if (length > data.length - offset) {
+                throw new IllegalArgumentException("String length does not match data length.");
+            }
+            return new String(data, offset, length, StandardCharsets.UTF_8);
+        }
     }
 
     @Override
@@ -76,5 +80,10 @@ public class BorshStringField extends FieldBase<String> implements DynamicSpanFi
         int length = ((data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8) |
                 ((data[offset + 2] & 0xFF) << 16) | ((data[offset + 3] & 0xFF) << 24));
         return 4 + length; // 길이 필드(4 bytes) + 문자열 데이터 길이
+    }
+
+    @Override
+    public int getNoDataSpan() {
+        return 4; // 0x00000000
     }
 }

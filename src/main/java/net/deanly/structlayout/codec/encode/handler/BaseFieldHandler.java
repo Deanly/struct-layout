@@ -6,6 +6,7 @@ import net.deanly.structlayout.analysis.FieldDebugInfo;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.type.FieldBase;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public abstract class BaseFieldHandler {
@@ -14,7 +15,7 @@ public abstract class BaseFieldHandler {
      * Main handling logic for a field.
      * Handles common steps like validation, type conversion, and layout encoding.
      */
-    public abstract <T> byte[] handleField(T instance, java.lang.reflect.Field field) throws IllegalAccessException;
+    public abstract <T> byte[] handleField(T instance, java.lang.reflect.Field field) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException;
 
     /**
      * Extracts the layout instance for the specified DataType.

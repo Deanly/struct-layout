@@ -1,11 +1,13 @@
 package net.deanly.structlayout.codec.decode.handler;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.annotation.StructTypeSelector;
 import net.deanly.structlayout.codec.decode.StructDecodeResult;
 import net.deanly.structlayout.codec.decode.StructDecoder;
 import net.deanly.structlayout.annotation.StructSequenceObjectField;
 import net.deanly.structlayout.codec.helpers.FieldHelper;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
+import net.deanly.structlayout.dispatcher.StructTypeResolver;
 import net.deanly.structlayout.exception.InvalidAnnotationUsageException;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
 import net.deanly.structlayout.exception.LayoutInitializationException;
@@ -28,7 +30,7 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
     @SuppressWarnings("unchecked")
     @Override
     public <T> int handleField(T instance, java.lang.reflect.Field field, byte[] data, int offset) throws IllegalAccessException {
-        // 1. 어노테이션 확인
+        // 어노테이션 확인
         StructSequenceObjectField annotation = field.getAnnotation(StructSequenceObjectField.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
@@ -36,7 +38,22 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             );
         }
 
-        // 2. 길이와 요소 타입 확인
+        // Layout 인스턴스 가져오기
+        Field<?> lengthField = resolveLayout(annotation.lengthType());
+        boolean unsafeMode = lengthField instanceof NoneField;
+
+        // 길이 정보 디코딩
+        int currentOffset = offset;
+        int length = 0;
+        if (!unsafeMode) {
+            Object lengthRawValue = lengthField.decode(data, offset);
+            length = (int) TypeConverterHelper.convertToType(lengthRawValue, Integer.class);
+            currentOffset += ((lengthField instanceof DynamicSpanField) ?
+                    ((DynamicSpanField) lengthField).calculateSpan(data, offset) :
+                    lengthField.getSpan());
+        }
+
+        // 길이와 요소 확인
         Class<?> fieldType = field.getType();
         if (!fieldType.isArray() && !Collection.class.isAssignableFrom(fieldType)) {
             throw new InvalidSequenceTypeException(
@@ -45,6 +62,41 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             );
         }
         Class<?> elementType = fieldType.isArray() ? fieldType.getComponentType() : resolveCollectionElementType(field);
+        Class<?> elementOriginType = elementType;
+
+        // 배열 또는 컬렉션 타입 확인
+        Object result;
+        if (fieldType.isArray()) {
+            // 배열인 경우
+            result = !unsafeMode ? Array.newInstance(elementOriginType, length) : new ArrayList<>();
+        } else if (Collection.class.isAssignableFrom(fieldType)) {
+            // 컬렉션인 경우
+            result = createCollectionInstance(fieldType);
+        } else {
+            throw new InvalidSequenceTypeException(field.getName(), fieldType, "Only Array or Collection types are supported for @StructSequenceObjectField");
+        }
+
+        // 요소가 없을때 반환
+        if (!unsafeMode && length == 0) {
+            field.setAccessible(true);
+            if (fieldType.isArray()) {
+                field.set(instance, Array.newInstance(elementType, 0));
+            } else {
+                field.set(instance, result);
+            }
+            return currentOffset - offset;
+        }
+
+        // 검증
+        if (elementType.isAnnotationPresent(StructTypeSelector.class)) {
+            try {
+                elementType = StructTypeResolver.resolveClass(data, elementOriginType, currentOffset);
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                        String.format("Failed to resolve element type for field '%s'. Type resolution error: %s", field.getName(), e.getMessage()), e
+                );
+            }
+        }
         if (elementType.isPrimitive() || FieldHelper.PRIMITIVE_WRAPPERS.contains(elementType)) {
             throw new InvalidAnnotationUsageException(
                     String.format(
@@ -62,38 +114,19 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             );
         }
 
-        // 3. Layout 인스턴스 가져오기
-        Field<?> lengthField = resolveLayout(annotation.lengthType());
-        boolean unsafeMode = lengthField instanceof NoneField;
-
-        // 4. 길이 정보 디코딩
-        int currentOffset = offset;
-        int length = 0;
-        if (!unsafeMode) {
-            Object lengthRawValue = lengthField.decode(data, offset);
-            length = (int) TypeConverterHelper.convertToType(lengthRawValue, Integer.class);
-            currentOffset += ((lengthField instanceof DynamicSpanField) ?
-                    ((DynamicSpanField) lengthField).calculateSpan(data, offset) :
-                    lengthField.getSpan());
-        }
-
-        // 5. 배열 또는 컬렉션 타입 확인
-        Object result;
-        if (fieldType.isArray()) {
-            // 배열인 경우
-            elementType = fieldType.getComponentType();
-            result = !unsafeMode ? Array.newInstance(elementType, length) : new ArrayList<>();
-        } else if (Collection.class.isAssignableFrom(fieldType)) {
-            // 컬렉션인 경우
-            elementType = resolveCollectionElementType(field);
-            result = createCollectionInstance(fieldType);
-        } else {
-            throw new InvalidSequenceTypeException(field.getName(), fieldType, "Only Array or Collection types are supported for @StructSequenceObjectField");
-        }
-
-        // 6. 개별 요소 디코드
+        // 개별 요소 디코드
         int elementCount = 0;
         while (unsafeMode ? currentOffset < data.length : elementCount < length) {
+            if (!elementType.equals(elementOriginType)) {
+                try {
+                    elementType = StructTypeResolver.resolveClass(data, elementOriginType, currentOffset);
+                } catch (Exception e) {
+                    throw new IllegalStateException(
+                            String.format("Failed to resolve element type for field '%s'. Type resolution error: %s", field.getName(), e.getMessage()), e
+                    );
+                }
+            }
+
             StructDecodeResult<?> decodeResult = StructDecoder.decode(elementType, data, currentOffset);
             Object decodedValue = decodeResult.getValue();
             int decodedSize = decodeResult.getSize();
@@ -124,7 +157,7 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             elementCount++;
         }
 
-        // 7. 필드 값 설정
+        // 필드 값 설정
         field.setAccessible(true);
         if (unsafeMode && fieldType.isArray()) {
             Object arrayResult = Array.newInstance(elementType, elementCount);

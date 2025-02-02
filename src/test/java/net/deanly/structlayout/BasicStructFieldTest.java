@@ -1,12 +1,13 @@
 package net.deanly.structlayout;
 
 import lombok.*;
-import net.deanly.structlayout.annotation.StructField;
-import net.deanly.structlayout.annotation.StructSequenceField;
-import net.deanly.structlayout.annotation.StructObjectField;
-import net.deanly.structlayout.annotation.StructSequenceObjectField;
+import net.deanly.structlayout.annotation.*;
+import net.deanly.structlayout.dispatcher.StructTypeDispatcher;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.basic.*;
+import net.deanly.structlayout.type.borsh.BorshBlobField;
+import net.deanly.structlayout.type.borsh.BorshStringField;
+import net.deanly.structlayout.type.borsh.COptionFieldTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -91,12 +92,16 @@ public class BasicStructFieldTest {
         original.setFloatArray(new float[]{3.14f, 1.59f});
         original.setDoubleList(List.of(1.23, 4.56));
         original.setCustomStruct(new CustomStruct(7, new Key("NestedStructKey11111111111111111")));
+        original.setInterfaceStructList(List.of(new StructAImpl(), new StructBImpl()));
 
         // Encode the object
         byte[] serializedData = StructLayout.encode(original);
+        StructLayout.debug(serializedData);
+        StructLayout.debug(original);
 
         // Decode the serialized data
         AllDataTypesStruct deserialized = StructLayout.decode(serializedData, AllDataTypesStruct.class);
+        StructLayout.debug(deserialized);
 
         // Assertions to verify correct encoding/decoding
         assertEquals(original.getInt32Value(), deserialized.getInt32Value());
@@ -107,6 +112,8 @@ public class BasicStructFieldTest {
         assertEquals(original.getDoubleList(), deserialized.getDoubleList());
         assertEquals(original.getCustomStruct().getId(), deserialized.getCustomStruct().getId());
         assertEquals(original.getCustomStruct().getKey(), deserialized.getCustomStruct().getKey());
+        assertEquals(original.getInterfaceStructList().get(0).getClass(), deserialized.getInterfaceStructList().get(0).getClass());
+        assertEquals(original.getInterfaceStructList().get(1).getClass(), deserialized.getInterfaceStructList().get(1).getClass());
     }
 
     @Test
@@ -172,9 +179,13 @@ public class BasicStructFieldTest {
                 new CustomStruct(10000L, new Key("11111111111111111111111111111111")),
                 new CustomStruct(80000L, new Key("11111111111111111111111111111111"))
         ));
+        struct.setInterfaceStruct(new StructBImpl());
+
+        StructLayout.debug(struct);
 
         // Encode to byte array
         byte[] serializedData = StructLayout.encode(struct);
+        StructLayout.debug(serializedData);
 
         // Decode from byte array
         AllDataTypesStruct decodedStruct = StructLayout.decode(serializedData, AllDataTypesStruct.class);
@@ -205,7 +216,7 @@ public class BasicStructFieldTest {
 
         // Debug the decoded struct
         System.out.println("Debug Decoded Struct:");
-        StructLayout.debug(decodedStruct);
+        StructLayout.debug(struct);
 
         System.out.println("Debug with Field:");
         StructLayout.debug(decodedStruct);
@@ -237,6 +248,12 @@ public class BasicStructFieldTest {
 
         @StructSequenceObjectField(order = 8, lengthType = Int16LEField.class)
         private List<CustomStruct> customStructList;
+
+        @StructObjectField(order = 9)
+        private InterfaceStruct interfaceStruct;
+
+        @StructSequenceObjectField(order = 10, lengthType = Int16LEField.class)
+        private List<InterfaceStruct> interfaceStructList;
 
         private CustomStruct[] test;
     }
@@ -300,5 +317,48 @@ public class BasicStructFieldTest {
     @RequiredArgsConstructor
     public static class Key {
         private final String key;
+    }
+
+    @StructTypeSelector(dispatcher = InterfaceStruct.Dispatcher.class)
+    public interface InterfaceStruct {
+        class Dispatcher implements StructTypeDispatcher {
+            @Override
+            public Class<?> dispatch(byte[] data, int startOffset) {
+                return switch (data[startOffset]) {
+                    case 0, 1 -> StructAImpl.class;
+                    case 2 -> StructBImpl.class;
+                    default -> throw new RuntimeException("Invalid Struct Type" + data[startOffset] + " was detected.");
+                };
+            }
+
+            @Override
+            public int getNoDataSpan() {
+                return 5;
+            }
+        }
+    }
+
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    @NoArgsConstructor
+    public static class StructAImpl implements InterfaceStruct {
+        @StructField(order = 1, type = UInt8Field.class)
+        private int id = 1;
+
+        @StructField(order = 2, type = BorshStringField.class)
+        private String text = "Hello, Struct A Object!";
+    }
+
+    @Getter
+    @ToString
+    @EqualsAndHashCode
+    @NoArgsConstructor
+    public static class StructBImpl implements InterfaceStruct {
+        @StructField(order = 1, type = UInt8Field.class)
+        private int id = 2;
+
+        @StructField(order = 2, type = BorshStringField.class)
+        private String text = "Hello, Struct B Object!";
     }
 }

@@ -64,6 +64,11 @@ class CachedLayoutProviderTest {
         }
 
         @Override
+        public int getNoDataSpan() {
+            return 0;
+        }
+
+        @Override
         public int getSpan() {
             return span;
         }
@@ -110,6 +115,11 @@ class CachedLayoutProviderTest {
         @Override
         public int calculateSpan(byte[] data, int offset) {
             return span;
+        }
+
+        @Override
+        public int getNoDataSpan() {
+            return 0;
         }
     }
 

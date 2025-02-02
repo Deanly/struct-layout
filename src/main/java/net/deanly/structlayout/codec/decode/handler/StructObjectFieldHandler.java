@@ -1,8 +1,13 @@
 package net.deanly.structlayout.codec.decode.handler;
 
-import net.deanly.structlayout.StructLayout;
 import net.deanly.structlayout.annotation.StructObjectField;
+import net.deanly.structlayout.annotation.StructTypeSelector;
+import net.deanly.structlayout.codec.decode.StructDecodeResult;
 import net.deanly.structlayout.codec.decode.StructDecoder;
+import net.deanly.structlayout.dispatcher.StructTypeResolver;
+import net.deanly.structlayout.exception.LayoutInitializationException;
+
+import java.lang.annotation.Annotation;
 
 public class StructObjectFieldHandler extends BaseFieldHandler {
 
@@ -16,21 +21,31 @@ public class StructObjectFieldHandler extends BaseFieldHandler {
         }
 
         Class<?> nestedType = field.getType();
+        StructDecodeResult<?> result;
 
-        Object nestedInstance = StructDecoder.decode(nestedType, data, offset).getValue();
+        Annotation nestedTypeAnnotation = nestedType.getAnnotation(StructTypeSelector.class);
+        if (nestedTypeAnnotation != null && nestedType.isInterface()) {
+            // 인터페이스일 경우 `@StructTypeSelector` 로 생성
+            try {
+                if (data.length - offset == 0 && StructTypeResolver.resolveNoDataSpan(nestedType) == 0) {
+                    return 0;
+                } else {
+                    Class<?> implClazz = StructTypeResolver.resolveClass(data, nestedType, offset);
+                    result = StructDecoder.decode(implClazz, data, offset);
+                }
+
+            } catch(Exception e) {
+                throw new LayoutInitializationException("Failed to dispatch interface: `" + nestedType.getName() + "` => " + e.getMessage(), e);
+            }
+        } else {
+            result = StructDecoder.decode(nestedType, data, offset);
+        }
 
         field.setAccessible(true);
-        field.set(instance, nestedInstance);
+        field.set(instance, result.getValue());
 
-        return calculateEncodedObjectSize(nestedType, nestedInstance);
+        return result.getSize();
     }
 
-    /**
-     * 중첩된 객체의 크기를 계산
-     */
-    private static int calculateEncodedObjectSize(Class<?> type, Object instance) {
-        // StructLayout.encode 메소드를 활용하여 크기를 계산
-        byte[] encodedData = StructLayout.encode(instance);
-        return encodedData.length;
-    }
+
 }

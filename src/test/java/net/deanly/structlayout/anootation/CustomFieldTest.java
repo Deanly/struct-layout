@@ -74,8 +74,9 @@ public class CustomFieldTest {
         struct.setPublicKey(null); // Null value
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> StructLayout.encode(struct));
-        assertTrue(exception.getMessage().contains("PublicKey value cannot be null"), "Exception message should contain 'PublicKey value cannot be null'");
+        byte[] encodedData = StructLayout.encode(struct);
+        assertNotNull(encodedData, "Encoded data should not be null");
+        assertEquals(32, encodedData.length, "Encoded data should be 32 bytes");
     }
 
     @Test

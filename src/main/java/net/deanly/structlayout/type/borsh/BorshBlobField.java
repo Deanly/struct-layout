@@ -5,7 +5,6 @@ import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.basic.BasicType;
 
 public class BorshBlobField extends FieldBase<byte[]> implements BasicType, DynamicSpanField {
-    private int length; // Blob 데이터의 길이
 
     public BorshBlobField() {
         super(-1, byte[].class);
@@ -16,7 +15,7 @@ public class BorshBlobField extends FieldBase<byte[]> implements BasicType, Dyna
         if (value == null) {
             value = new byte[0];
         }
-        this.length = value.length;
+        var length = value.length;
 
         // Encode TLV 구조: [Length][Value]
         byte[] result = new byte[length + 4]; // 4 bytes for length (VarInt)
@@ -39,7 +38,7 @@ public class BorshBlobField extends FieldBase<byte[]> implements BasicType, Dyna
             throw new IllegalArgumentException("Invalid TLV structure: insufficient data");
         }
         // Length 읽기 (Big-endian)
-        length = ((bytes[offset] & 0xFF) << 24) |
+        var length = ((bytes[offset] & 0xFF) << 24) |
                 ((bytes[offset + 1] & 0xFF) << 16) |
                 ((bytes[offset + 2] & 0xFF) << 8) |
                 (bytes[offset + 3] & 0xFF);
@@ -67,11 +66,13 @@ public class BorshBlobField extends FieldBase<byte[]> implements BasicType, Dyna
     }
 
     @Override
-    public int getSpan() {
-        return length + 4; // Length 필드 (4) + Value 필드
+    public int getNoDataSpan() {
+        return 4;
     }
 
-    public void setSpan(int span) {
-        this.length = span - 4;
+    @Override
+    public int getSpan() {
+        throw new UnsupportedOperationException("Span cannot be calculated for BorshBlobField");
     }
+
 }
