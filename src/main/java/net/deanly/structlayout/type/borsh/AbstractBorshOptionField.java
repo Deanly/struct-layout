@@ -38,7 +38,7 @@ import net.deanly.structlayout.type.FieldBase;
  * <p>To use AbstractCOptionField, you need to create a subclass for each specific field type.
  * Implement the {@code createField()} method to return the appropriate field instance for encoding and decoding.</p>
  *
- * <h3>Example: Creating a Custom Field</h3>
+ * Example: Creating a Custom Field
  * <pre>{@code
  * public class UInt8OptionField extends AbstractCOptionField<Short, UInt8Field> {
  *     @Override
@@ -48,7 +48,7 @@ import net.deanly.structlayout.type.FieldBase;
  * }
  * }</pre>
  *
- * <h3>Using AbstractCOptionField in a Struct</h3>
+ * Using AbstractCOptionField in a Struct
  * <pre>{@code
  * public class OptionalStruct {
  *     @StructField(order = 1, type = UInt8OptionField.class)
@@ -70,7 +70,7 @@ import net.deanly.structlayout.type.FieldBase;
  * assertEquals(struct.getOptionalMessage(), deserialized.getOptionalMessage());
  * }</pre>
  *
- * <h3>Dynamic Span Calculation</h3>
+ * Dynamic Span Calculation
  * <p>The {@code calculateSpan(byte[] data, int offset)} method dynamically determines the size of the field:
  * <ul>
  *   <li>For `None` (null): 1 byte (tag only).</li>
@@ -78,7 +78,7 @@ import net.deanly.structlayout.type.FieldBase;
  * </ul>
  * </p>
  *
- * <h3>Encoding and Decoding</h3>
+ * Encoding and Decoding
  * <p>AbstractCOptionField handles encoding and decoding of optional fields as follows:</p>
  * <pre>{@code
  * UInt8OptionField field = new UInt8OptionField();
@@ -92,7 +92,7 @@ import net.deanly.structlayout.type.FieldBase;
  * assertEquals(120, decoded);
  * }</pre>
  *
- * <h3>Handling Null Values</h3>
+ * Handling Null Values
  * <ul>
  *   <li>If the value is {@code null}, {@code encode()} produces a tag of 0 (representing `None`).</li>
  *   <li>When decoding a tag of 0, {@code decode()} returns {@code null}.</li>

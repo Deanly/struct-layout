@@ -14,7 +14,7 @@ import net.deanly.structlayout.type.FieldBase;
  * decoding, and spans calculation. It integrates seamlessly with sequences that
  * require "unsafe mode" functionality to handle elements directly without length constraints.</p>
  *
- * <h3>Key Features:</h3>
+ * Key Features:
  * <ul>
  *   <li><b>Zero Length:</b> Always returns 0 for length (`getSpan`) and produces an empty byte array on encoding.</li>
  *   <li><b>No Value:</b> The decode method always returns {@code null}, and encoding expects a {@code Void} value.</li>
@@ -22,7 +22,7 @@ import net.deanly.structlayout.type.FieldBase;
  *       to indicate the absence of length metadata.</li>
  * </ul>
  *
- * <h3>Use Cases:</h3>
+ * Use Cases:
  * <ul>
  *   <li>Handling sequences without length metadata (e.g., raw byte sequences or "unsafe mode").</li>
  *   <li>When length prefixing/constraining is irrelevant or unsupported by the data structure.</li>
