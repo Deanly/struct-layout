@@ -8,6 +8,7 @@ import net.deanly.structlayout.type.basic.Int32LEField;
 import net.deanly.structlayout.type.basic.StringCField;
 import net.deanly.structlayout.type.basic.UInt64LEField;
 import net.deanly.structlayout.type.basic.UInt8Field;
+import net.deanly.structlayout.type.guava.UnsignedLong;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -23,7 +24,7 @@ public class COptionFieldTest {
         }
     }
 
-    public static class UInt64LEOptionField extends AbstractBorshOptionField<BigInteger, UInt64LEField> {
+    public static class UInt64LEOptionField extends AbstractBorshOptionField<UnsignedLong, UInt64LEField> {
         @Override
         protected UInt64LEField createField() {
             return new UInt64LEField();
@@ -153,9 +154,9 @@ public class COptionFieldTest {
         UInt64LEOptionField field = new UInt64LEOptionField();
 
         // Optional Some: 큰 값 설정
-        BigInteger originalValue = new BigInteger("12345678901234567890");
+        UnsignedLong originalValue = UnsignedLong.valueOf("12345678901234567890");
         byte[] encoded = field.encode(originalValue);
-        BigInteger decoded = field.decode(encoded, 0);
+        UnsignedLong decoded = field.decode(encoded, 0);
 
         assertNotNull(decoded);
         assertEquals(originalValue, decoded);
@@ -208,15 +209,15 @@ public class COptionFieldTest {
         UInt64LEOptionField field = new UInt64LEOptionField();
 
         // BigInteger extreme test
-        BigInteger maxValue = new BigInteger("18446744073709551615"); // UINT64_MAX
+        UnsignedLong maxValue = UnsignedLong.valueOf("18446744073709551615"); // UINT64_MAX
         byte[] encodedMax = field.encode(maxValue);
-        BigInteger decodedMax = field.decode(encodedMax, 0);
+        UnsignedLong decodedMax = field.decode(encodedMax, 0);
 
         assertEquals(maxValue, decodedMax, "Decoded max value mismatch");
 
-        BigInteger zero = BigInteger.ZERO;
+        UnsignedLong zero = UnsignedLong.ZERO;
         byte[] encodedZero = field.encode(zero);
-        BigInteger decodedZero = field.decode(encodedZero, 0);
+        UnsignedLong decodedZero = field.decode(encodedZero, 0);
 
         assertEquals(zero, decodedZero, "Decoded zero mismatch");
     }

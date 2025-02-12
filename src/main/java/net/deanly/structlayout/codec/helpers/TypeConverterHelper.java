@@ -3,6 +3,7 @@ package net.deanly.structlayout.codec.helpers;
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.exception.TypeConversionException;
 import net.deanly.structlayout.type.FieldBase;
+import net.deanly.structlayout.type.guava.UnsignedLong;
 
 /**
  * Utility class for converting values of one type to another while supporting validation,
@@ -154,6 +155,9 @@ public class TypeConverterHelper {
             // `double`은 Java가 제공하는 최대 범위이므로 제한 없음
             return value.doubleValue();
         }
+        if (targetClass == UnsignedLong.class) {
+            return UnsignedLong.valueOf(value.toString());
+        }
         if (targetClass == java.math.BigInteger.class) {
             return new java.math.BigInteger(value.toString());
         }
@@ -222,6 +226,9 @@ public class TypeConverterHelper {
     private static Object convertToSpecialTypes(Object value, Class<?> targetClass) {
         if (targetClass == java.math.BigDecimal.class) {
             return new java.math.BigDecimal(value.toString());
+        }
+        if (targetClass == UnsignedLong.class) {
+            return UnsignedLong.valueOf(value.toString());
         }
         if (targetClass == java.math.BigInteger.class) {
             return new java.math.BigInteger(value.toString());

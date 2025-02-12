@@ -37,14 +37,16 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
 
     private static final int CACHE_SIZE = 2048;
     private static final UnsignedLong[] CACHE = new UnsignedLong[CACHE_SIZE];
-    public static final UnsignedLong ZERO = CACHE[0];
-    public static final UnsignedLong ONE = CACHE[1];
+    public static final UnsignedLong ZERO;
+    public static final UnsignedLong ONE;
     public static final UnsignedLong MAX_VALUE = new UnsignedLong(-1L);
 
     static {
         for (int i = 0; i < CACHE_SIZE; i++) {
             CACHE[i] = new UnsignedLong(i);
         }
+        ZERO = CACHE[0];
+        ONE = CACHE[1];
     }
 
     private final long value;

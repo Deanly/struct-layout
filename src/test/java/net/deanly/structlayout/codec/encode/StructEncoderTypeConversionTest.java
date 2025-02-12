@@ -2,6 +2,7 @@ package net.deanly.structlayout.codec.encode;
 
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.BasicTypes;
+import net.deanly.structlayout.type.guava.UnsignedLong;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -55,15 +56,15 @@ public class StructEncoderTypeConversionTest {
     @Test
     public void testUInt64ToBigIntegerConversion() {
         // Arrange
-        FieldBase<BigInteger> field = createLayout(BasicTypes.UINT64_LE);
-        BigInteger expectedValue = new BigInteger("18446744073709551615"); // Max UINT64
+        FieldBase<UnsignedLong> field = createLayout(BasicTypes.UINT64_LE);
+        UnsignedLong expectedValue = UnsignedLong.valueOf("18446744073709551615"); // Max UINT64
         byte[] encoded = field.encode(expectedValue);
 
         // Act
-        BigInteger decodedValue = field.decode(encoded, 0);
+        UnsignedLong decodedValue = field.decode(encoded, 0);
 
         // Assert
-        assertEquals(expectedValue, decodedValue, "UINT64 -> BigInteger conversion failed.");
+        assertEquals(expectedValue, decodedValue, "UINT64 -> UnsignedLong conversion failed.");
     }
 
     @Test

@@ -3,18 +3,18 @@ package net.deanly.structlayout.type.basic;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.CountableField;
 
-import java.math.BigInteger;
+import net.deanly.structlayout.type.guava.UnsignedLong;
 
-public class UInt64BEField extends FieldBase<BigInteger> implements CountableField<BigInteger> {
+public class UInt64BEField extends FieldBase<UnsignedLong> implements CountableField<UnsignedLong> {
 
-    public static final BigInteger UINT64_MAX = new BigInteger("18446744073709551615");
+    public static final UnsignedLong UINT64_MAX = UnsignedLong.MAX_VALUE;
 
     public UInt64BEField() {
-        super(8, BigInteger.class);
+        super(8, UnsignedLong.class);
     }
 
     @Override
-    public BigInteger decode(byte[] data, int offset) {
+    public UnsignedLong decode(byte[] data, int offset) {
         if (data == null) {
             throw new IllegalArgumentException("Data cannot be null.");
         }
@@ -22,31 +22,27 @@ public class UInt64BEField extends FieldBase<BigInteger> implements CountableFie
             throw new IllegalArgumentException("Invalid offset or insufficient data length.");
         }
 
-        // Read 8 bytes in big-endian order into BigInteger
-        BigInteger result = BigInteger.ZERO;
+        long result = 0;
         for (int i = 0; i < 8; i++) {
-            result = result.shiftLeft(8).or(BigInteger.valueOf(data[offset + i] & 0xFF));
+            result = (result << 8) | (data[offset + i] & 0xFF);
         }
 
-        return result;
+        return UnsignedLong.fromLongBits(result);
     }
 
     @Override
-    public byte[] encode(BigInteger value) {
-        if (value == null || value.compareTo(BigInteger.ZERO) < 0 || value.compareTo(UINT64_MAX) > 0) {
+    public byte[] encode(UnsignedLong value) {
+        if (value == null || value.compareTo(UnsignedLong.ZERO) < 0 || value.compareTo(UINT64_MAX) > 0) {
             throw new IllegalArgumentException("Value must not be negative or exceed unsigned 64-bit integer range. " + value);
         }
 
         byte[] data = new byte[8];
-
-        // Encode in big-endian order
-        BigInteger temp = value;
+        long temp = value.longValue();
         for (int i = 7; i >= 0; i--) {
-            data[i] = temp.byteValue();
-            temp = temp.shiftRight(8);
+            data[i] = (byte) (temp & 0xFF);
+            temp >>= 8;
         }
 
         return data;
     }
-
 }
