@@ -149,7 +149,7 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      *
      * @since 14.0
      */
-    public UnsignedLong times(UnsignedLong val) {
+    public UnsignedLong multiply(UnsignedLong val) {
         return fromLongBits(value * checkNotNull(val).value);
     }
 
@@ -158,7 +158,7 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
      *
      * @since 14.0
      */
-    public UnsignedLong dividedBy(UnsignedLong val) {
+    public UnsignedLong divide(UnsignedLong val) {
         return fromLongBits(UnsignedLongs.divide(value, checkNotNull(val).value));
     }
 
@@ -229,10 +229,15 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
         return bigInt;
     }
 
+    /** Returns the value of this {@code UnsignedLong} as a {@link BigInteger}. */
+    public BigInteger toBigInteger() {
+        return bigIntegerValue();
+    }
+
     /**
      * Returns the value of this {@code UnsignedLong} as a {@link BigDecimal}.
      */
-    public BigDecimal bigDecimalValue() {
+    public BigDecimal toBigDecimal() {
         return new BigDecimal(bigIntegerValue());
     }
 
@@ -299,4 +304,79 @@ public final class UnsignedLong extends Number implements Comparable<UnsignedLon
         }
         return reference;
     }
+
+    /**
+     * Compares this {@code UnsignedLong} with the specified {@code UnsignedLong}
+     * and determines if this instance is greater than the other.
+     *
+     * @param other the {@code UnsignedLong} to be compared
+     * @return {@code true} if this {@code UnsignedLong} is greater than the specified {@code other};
+     *         {@code false} otherwise
+     */
+    public boolean isGreaterThan(UnsignedLong other) {
+        checkNotNull(other);
+        return this.compareTo(other) > 0;
+    }
+
+    /**
+     * Compares this {@code UnsignedLong} with the specified {@code UnsignedLong}
+     * and determines if this instance is greater than or equal to the other.
+     *
+     * @param other the {@code UnsignedLong} to be compared
+     * @return {@code true} if this {@code UnsignedLong} is greater than or equal to the specified {@code other};
+     *         {@code false} otherwise
+     */
+    public boolean isGreaterThanOrEqualTo(UnsignedLong other) {
+        checkNotNull(other);
+        return this.compareTo(other) >= 0;
+    }
+
+    /**
+     * Compares this {@code UnsignedLong} with the specified {@code UnsignedLong}
+     * and determines if this instance is less than the other.
+     *
+     * @param other the {@code UnsignedLong} to be compared
+     * @return {@code true} if this {@code UnsignedLong} is less than the specified {@code other};
+     *         {@code false} otherwise
+     */
+    public boolean isLessThan(UnsignedLong other) {
+        checkNotNull(other);
+        return this.compareTo(other) < 0;
+    }
+
+    /**
+     * Compares this {@code UnsignedLong} with the specified {@code UnsignedLong}
+     * to determine if this instance is less than or equal to the other.
+     *
+     * @param other the {@code UnsignedLong} to be compared
+     * @return {@code true} if this {@code UnsignedLong} is less than or equal to the specified {@code other};
+     *         {@code false} otherwise
+     */
+    public boolean isLessThanOrEqualTo(UnsignedLong other) {
+        checkNotNull(other);
+        return this.compareTo(other) <= 0;
+    }
+
+    /**
+     * Determines if this {@code UnsignedLong} has the same value as the specified {@code UnsignedLong}.
+     *
+     * @param other the {@code UnsignedLong} to compare with this instance
+     * @return {@code true} if this {@code UnsignedLong} has the same value as {@code other};
+     *         {@code false} otherwise
+     * @throws NullPointerException if {@code other} is null
+     */
+    public boolean hasEqualAmount(UnsignedLong other) {
+        checkNotNull(other);
+        return this.equals(other);
+    }
+
+    /**
+     * Determines if this {@code UnsignedLong} represents the value zero.
+     *
+     * @return {@code true} if this {@code UnsignedLong} equals zero; {@code false} otherwise
+     */
+    public boolean isZero() {
+        return this.equals(ZERO);
+    }
+
 }
