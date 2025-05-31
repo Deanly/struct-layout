@@ -2,6 +2,7 @@ package net.deanly.structlayout.codec.encode.handler;
 
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.FieldDebugInfo;
+import net.deanly.structlayout.annotation.OptionalEncoding;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
 import net.deanly.structlayout.exception.LayoutInitializationException;
@@ -24,6 +25,8 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
             throw new InvalidSequenceTypeException(field.getName(), field.getType());
         }
 
+        OptionalEncoding opt = annotation.optional();
+
         // 2. 필드 값 추출
         Object arrayOrList = extractFieldValue(instance, field);
 
@@ -32,12 +35,28 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
         Class<? extends Field<?>> elementFieldType = annotation.elementType();
         boolean unsafeMode = NoneField.class.isAssignableFrom(lengthType);
 
-        // 4. Null 처리: 빈 배열로 대체
+        if (opt == OptionalEncoding.BORSH) {
+            if (arrayOrList == null) {
+                return new byte[]{0x00}; // None
+            } else {
+                List<Object> elements = toElementList(arrayOrList);
+                byte[] encoded = encodeLengthAndElements(elements, lengthType, elementFieldType, unsafeMode);
+                byte[] result = new byte[1 + encoded.length];
+                result[0] = 0x01;
+                System.arraycopy(encoded, 0, result, 1, encoded.length);
+                return result;
+            }
+        }
+
         if (arrayOrList == null) {
             return encodeLengthAndElements(new ArrayList<>(), lengthType, elementFieldType, unsafeMode);
         }
 
-        // 5. 배열 또는 List인지 확인, 아니면 예외 발생
+        List<Object> elements = toElementList(arrayOrList);
+        return encodeLengthAndElements(elements, lengthType, elementFieldType, unsafeMode);
+    }
+
+    private List<Object> toElementList(Object arrayOrList) {
         List<Object> elements = new ArrayList<>();
         if (arrayOrList.getClass().isArray()) {
             int arrayLength = Array.getLength(arrayOrList);
@@ -49,12 +68,9 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
                 elements.add(element);
             }
         } else {
-            // 지원되지 않는 필드 타입인 경우
-            throw new InvalidSequenceTypeException(field.getName(), arrayOrList.getClass());
+            throw new InvalidSequenceTypeException("Unsupported field type", arrayOrList.getClass());
         }
-
-        // 6. 길이와 요소 병합 처리
-        return encodeLengthAndElements(elements, lengthType, elementFieldType, unsafeMode);
+        return elements;
     }
 
     /**
@@ -90,75 +106,54 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
 
     @Override
     public <T> List<FieldDebugInfo.Builder> handleDebug(T instance, java.lang.reflect.Field field) throws IllegalAccessException {
-        List<FieldDebugInfo.Builder> builders = new ArrayList<>();
-
-        // 1. @StructSequenceField 어노테이션 가져오기
         StructSequenceField annotation = field.getAnnotation(StructSequenceField.class);
         if (annotation == null) {
             throw new InvalidSequenceTypeException(field.getName(), field.getType());
         }
 
-        // 2. 길이 및 요소 타입 메타데이터 조회
+        OptionalEncoding opt = annotation.optional();
         Class<? extends CountableField<?>> lengthType = annotation.lengthType();
         Class<? extends Field<?>> elementFieldType = annotation.elementType();
         boolean unsafeMode = NoneField.class.isAssignableFrom(lengthType);
 
-        // 3. 필드 값 추출
         Object arrayOrList = extractFieldValue(instance, field);
-        if (arrayOrList == null) {
-            int length = 0; // 길이는 0으로 설정
-            return debugLengthAndElements(field, new ArrayList<>(), lengthType, elementFieldType, unsafeMode);
-        }
-
-        // 5. 배열 또는 List인지 확인, 아니면 예외 발생
-        List<Object> elements = new ArrayList<>();
-        if (arrayOrList.getClass().isArray()) {
-            int arrayLength = Array.getLength(arrayOrList);
-            for (int i = 0; i < arrayLength; i++) {
-                elements.add(Array.get(arrayOrList, i));
-            }
-        } else if (arrayOrList instanceof Iterable) {
-            for (Object element : (Iterable<?>) arrayOrList) {
-                elements.add(element);
-            }
-        } else {
-            // 지원되지 않는 필드 타입인 경우
-            throw new InvalidSequenceTypeException(field.getName(), arrayOrList.getClass());
-        }
-
-        // 6. 길이와 요소 병합 처리
-        return debugLengthAndElements(field, elements, lengthType, elementFieldType, unsafeMode);
-    }
-
-    private List<FieldDebugInfo.Builder> debugLengthAndElements(
-            java.lang.reflect.Field field,
-            List<Object> elements,
-            Class<? extends CountableField<?>> lengthType,
-            Class<? extends Field<?>> elementFieldType,
-            boolean unsafeMode
-    ) {
         List<FieldDebugInfo.Builder> builders = new ArrayList<>();
-        try {
-            if (!unsafeMode) {
-                Object convertedLength = TypeConverterHelper.convertToLayoutType(elements.size(), lengthType);
-                byte[] encodedLength = encodeElement(lengthType, convertedLength);
-                builders.add(FieldDebugInfo.builder()
-                        .orderSuffix("[].length")
-                        .fieldName(field.getName())
-                        .encodedBytes(encodedLength));
-            }
 
-            for (int i = 0; i < elements.size(); i++) {
-                Object convertedElement = TypeConverterHelper.convertToLayoutType(elements.get(i), elementFieldType);
-                byte[] encodedElement = encodeElement(elementFieldType, convertedElement);
-                builders.add(FieldDebugInfo.builder()
-                        .orderSuffix("[" + i + "]")
-                        .fieldName(field.getName())
-                        .encodedBytes(encodedElement));
+        // OptionalEncoding.BORSH: Always write 1-byte tag
+        if (opt == OptionalEncoding.BORSH) {
+            builders.add(FieldDebugInfo.builder()
+                    .fieldName(field.getName())
+                    .orderSuffix("[].optional_tag")
+                    .encodedBytes(new byte[] { (arrayOrList == null) ? (byte) 0x00 : (byte) 0x01 }));
+
+            if (arrayOrList == null) {
+                return builders; // no additional data
             }
-        } catch (Exception e) {
-            throw new LayoutInitializationException(
-                    "Failed to initialize layout for element or length type. Ensure that Field class is correctly defined.", e);
+        }
+
+        // null-safe 변환
+        List<Object> elements = (arrayOrList == null)
+                ? new ArrayList<>()
+                : toElementList(arrayOrList);
+
+        // length field (if not unsafe)
+        if (!unsafeMode) {
+            Object convertedLength = TypeConverterHelper.convertToLayoutType(elements.size(), lengthType);
+            byte[] encodedLength = encodeElement(lengthType, convertedLength);
+            builders.add(FieldDebugInfo.builder()
+                    .fieldName(field.getName())
+                    .orderSuffix("[].length")
+                    .encodedBytes(encodedLength));
+        }
+
+        // element list
+        for (int i = 0; i < elements.size(); i++) {
+            Object converted = TypeConverterHelper.convertToLayoutType(elements.get(i), elementFieldType);
+            byte[] encoded = encodeElement(elementFieldType, converted);
+            builders.add(FieldDebugInfo.builder()
+                    .fieldName(field.getName())
+                    .orderSuffix("[" + i + "]")
+                    .encodedBytes(encoded));
         }
 
         return builders;

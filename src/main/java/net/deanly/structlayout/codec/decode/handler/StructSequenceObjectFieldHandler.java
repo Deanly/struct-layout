@@ -1,6 +1,7 @@
 package net.deanly.structlayout.codec.decode.handler;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.annotation.OptionalEncoding;
 import net.deanly.structlayout.annotation.StructTypeSelector;
 import net.deanly.structlayout.codec.decode.StructDecodeResult;
 import net.deanly.structlayout.codec.decode.StructDecoder;
@@ -36,6 +37,23 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             throw new IllegalArgumentException(
                     String.format("Field '%s' is not annotated with @StructSequenceObjectField", field.getName())
             );
+        }
+
+        OptionalEncoding optionalEncoding = annotation.optional();
+        int consumed = 0;
+
+        // optional prefix 처리 (BORSH only)
+        if (optionalEncoding == OptionalEncoding.BORSH) {
+            boolean isPresent = isValuePresent(data, offset, optionalEncoding);
+            consumed += 1;
+
+            if (!isPresent) {
+                field.setAccessible(true);
+                field.set(instance, null);
+                return consumed;
+            }
+
+            offset += 1;
         }
 
         // Layout 인스턴스 가져오기
@@ -84,7 +102,7 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             } else {
                 field.set(instance, result);
             }
-            return currentOffset - offset;
+            return consumed + (currentOffset - offset);
         }
 
         // 검증
@@ -170,7 +188,7 @@ public class StructSequenceObjectFieldHandler extends BaseFieldHandler {
             field.set(instance, result);
         }
 
-        return currentOffset - offset;
+        return consumed + (currentOffset - offset);
     }
 
     private boolean hasPublicNoArgsConstructor(Class<?> clazz) {

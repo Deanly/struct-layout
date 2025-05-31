@@ -1,6 +1,7 @@
 package net.deanly.structlayout.codec.decode.handler;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.annotation.OptionalEncoding;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.type.DynamicSpanField;
@@ -16,6 +17,18 @@ public class StructFieldHandler extends BaseFieldHandler {
             );
         }
 
+        OptionalEncoding optional = annotation.optional();
+
+        // Handle BORSH Optional prefix
+        if (optional == OptionalEncoding.BORSH) {
+            if (!isValuePresent(data, offset, optional)) {
+                field.setAccessible(true);
+                field.set(instance, null);
+                return 1; // only prefix byte consumed
+            }
+            offset += 1; // skip prefix
+        }
+
         Field<?> layout = createLayoutInstance(annotation.type());
         Object decodedValue = layout.decode(data, offset);
         Object targetValue = TypeConverterHelper.convertToType(decodedValue, field.getType());
@@ -24,9 +37,9 @@ public class StructFieldHandler extends BaseFieldHandler {
         field.set(instance, targetValue);
 
         if (layout instanceof DynamicSpanField) {
-            return ((DynamicSpanField) layout).calculateSpan(data, offset);
+            return ((DynamicSpanField) layout).calculateSpan(data, offset) + (optional == OptionalEncoding.BORSH ? 1 : 0);
         } else {
-            return layout.getSpan();
+            return layout.getSpan() + (optional == OptionalEncoding.BORSH ? 1 : 0);
         }
     }
 

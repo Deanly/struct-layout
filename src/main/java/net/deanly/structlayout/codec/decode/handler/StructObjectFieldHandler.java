@@ -1,5 +1,6 @@
 package net.deanly.structlayout.codec.decode.handler;
 
+import net.deanly.structlayout.annotation.OptionalEncoding;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.annotation.StructTypeSelector;
 import net.deanly.structlayout.codec.decode.StructDecodeResult;
@@ -18,6 +19,22 @@ public class StructObjectFieldHandler extends BaseFieldHandler {
             throw new IllegalArgumentException(
                     String.format("Field '%s' is not annotated with @StructObjectField", field.getName())
             );
+        }
+
+        OptionalEncoding optionalEncoding = annotation.optional();
+        int consumed = 0;
+
+        if (optionalEncoding == OptionalEncoding.BORSH) {
+            boolean isPresent = isValuePresent(data, offset, optionalEncoding);
+            consumed += 1; // consume 1 byte for prefix
+
+            if (!isPresent) {
+                field.setAccessible(true);
+                field.set(instance, null);
+                return consumed;
+            }
+
+            offset += 1;
         }
 
         Class<?> nestedType = field.getType();
@@ -44,7 +61,7 @@ public class StructObjectFieldHandler extends BaseFieldHandler {
         field.setAccessible(true);
         field.set(instance, result.getValue());
 
-        return result.getSize();
+        return consumed + result.getSize();
     }
 
 

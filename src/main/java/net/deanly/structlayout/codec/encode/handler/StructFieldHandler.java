@@ -2,6 +2,7 @@ package net.deanly.structlayout.codec.encode.handler;
 
 import net.deanly.structlayout.Field;
 import net.deanly.structlayout.analysis.FieldDebugInfo;
+import net.deanly.structlayout.annotation.OptionalEncoding;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.codec.helpers.FieldHelper;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
@@ -12,41 +13,47 @@ import java.util.List;
 
 public class StructFieldHandler extends BaseFieldHandler {
 
+
     @Override
     public <T> byte[] handleField(T instance, java.lang.reflect.Field field) throws IllegalAccessException {
-        // @CustomLayoutField 어노테이션 확인
         StructField annotation = field.getAnnotation(StructField.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
-                    String.format("Field '%s' is not annotated with @CustomLayoutField", field.getName())
+                    String.format("Field '%s' is not annotated with @StructField", field.getName())
             );
         }
 
-        // 필드 값 추출
-        Object fieldValue = extractFieldValue(instance, field);
-
-        // Layout 클래스에서 Layout 인스턴스를 생성
+        // Layout 클래스
         Class<? extends Field<?>> layoutClass = annotation.type();
-        Field<Object> fieldInstance = createLayoutInstance(layoutClass, field.getName());
+        Field<Object> layout = createLayoutInstance(layoutClass, field.getName());
+        Object value = extractFieldValue(instance, field);
 
-        // Null 처리
-        if (fieldValue == null) {
-            var layout = resolveLayout(annotation.type());
+        OptionalEncoding opt = annotation.optional();
+
+        if (opt == OptionalEncoding.BORSH) {
+            if (value == null) {
+                return new byte[]{0x00}; // None
+            } else {
+                Object converted = TypeConverterHelper.convertToLayoutType(value, layoutClass);
+                byte[] encoded = layout.encode(converted);
+                byte[] result = new byte[1 + encoded.length];
+                result[0] = 0x01; // Some
+                System.arraycopy(encoded, 0, result, 1, encoded.length);
+                return result;
+            }
+        }
+
+        // NONE (기존 로직)
+        if (value == null) {
             if (layout instanceof DynamicSpanField) {
                 return new byte[((DynamicSpanField) layout).getNoDataSpan()];
             } else {
                 return new byte[layout.getSpan()];
             }
+        } else {
+            Object converted = TypeConverterHelper.convertToLayoutType(value, layoutClass);
+            return layout.encode(converted);
         }
-
-        // Layout의 제네릭 타입 추출
-        Class<?> genericType = FieldHelper.extractLayoutGenericType(layoutClass);
-
-        // TypeConverter를 통해 값 변환
-        Object convertedValue = TypeConverterHelper.convertToType(fieldValue, genericType);
-
-        // Layout을 이용해 값 인코딩
-        return fieldInstance.encode(convertedValue);
     }
 
     @Override

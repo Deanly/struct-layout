@@ -1,6 +1,7 @@
 package net.deanly.structlayout.codec.decode.handler;
 
 import net.deanly.structlayout.Field;
+import net.deanly.structlayout.annotation.OptionalEncoding;
 import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.codec.helpers.TypeConverterHelper;
 import net.deanly.structlayout.exception.InvalidSequenceTypeException;
@@ -23,6 +24,23 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
             throw new IllegalArgumentException(
                     String.format("Field '%s' is not annotated with @SequenceField", field.getName())
             );
+        }
+
+        OptionalEncoding optionalEncoding = annotation.optional();
+        int consumed = 0;
+
+        // OptionalEncoding.BORSH 체크
+        if (optionalEncoding == OptionalEncoding.BORSH) {
+            boolean isPresent = isValuePresent(data, offset, optionalEncoding);
+            consumed += 1;
+
+            if (!isPresent) {
+                field.setAccessible(true);
+                field.set(instance, null);
+                return consumed;
+            }
+
+            offset += 1;
         }
 
         // 2. Layout 인스턴스 가져오기
@@ -116,7 +134,7 @@ public class StructSequenceFieldHandler extends BaseFieldHandler {
             field.set(instance, result);
         }
 
-        return currentOffset - offset;
+        return consumed + (currentOffset - offset);
     }
 
     private Class<?> resolveCollectionElementType(java.lang.reflect.Field field) {
