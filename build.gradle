@@ -98,8 +98,21 @@ jreleaser {
             }
         }
     }
-    gitRootSearch = true
     project {
-        license.set("MIT")
+        name = 'struct-layout'
+        description = 'A Java library for structured binary data handling'
+        website = 'https://github.com/deanly/struct-layout'
+        license = 'MIT'
+    }
+
+    gitRootSearch = true
+    release {
+        github {
+            enabled = true
+            setRepoOwner('Deanly')
+            name = 'struct-layout'
+            tagName = 'v{{projectVersion}}'
+            releaseName = 'Release {{tagName}}'
+        }
     }
 }
