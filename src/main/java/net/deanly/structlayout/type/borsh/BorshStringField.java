@@ -28,21 +28,31 @@ public class BorshStringField extends FieldBase<String> implements DynamicSpanFi
 
     @Override
     public String decode(byte[] data, int offset) {
+        if (data == null) {
+            throw new IllegalArgumentException("Data cannot be null.");
+        }
+        if (offset < 0 || offset + 4 > data.length) {
+            throw new IllegalArgumentException("Offset out of bounds. offset=" + offset + ", data.length=" + data.length);
+        }
+
         // 문자열 길이 읽기 (Little-Endian u32)
         int length = ((data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8) |
                 ((data[offset + 2] & 0xFF) << 16) | ((data[offset + 3] & 0xFF) << 24));
         offset += 4;
 
+        if (length < 0 || length > data.length - offset) {
+            throw new IllegalArgumentException(String.format(
+                    "Invalid string length in Borsh decoding. length=%d, offset(after header)=%d, data.length=%d, headerOffset=%d",
+                    length, offset, data.length, offset - 4
+            ));
+        }
 
         // 문자열 데이터 읽기
         if (length == 0) {
             return "";
-        } else {
-            if (length > data.length - offset) {
-                throw new IllegalArgumentException("String length does not match data length.");
-            }
-            return new String(data, offset, length, StandardCharsets.UTF_8);
         }
+
+        return new String(data, offset, length, StandardCharsets.UTF_8).replaceAll("\u0000+$", "");
     }
 
     @Override

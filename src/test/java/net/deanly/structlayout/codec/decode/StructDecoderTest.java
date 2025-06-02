@@ -1,5 +1,6 @@
 package net.deanly.structlayout.codec.decode;
 
+import net.deanly.structlayout.exception.StructDecodingException;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.annotation.*;
 import net.deanly.structlayout.exception.InvalidDataOffsetException;
@@ -111,7 +112,8 @@ class StructDecoderTest {
         };
 
         // When & Then: Attempt to decode partial data
-        assertThrows(IllegalArgumentException.class,
+//        assertThrows(IllegalArgumentException.class,
+        assertThrows(StructDecodingException.class,
                 () -> StructDecoder.decode(SampleObject.class, partialData, 0),
                 "Decoding partial data should throw IllegalArgumentException");
     }
@@ -154,7 +156,8 @@ class StructDecoderTest {
     void testDecodeInvalidCustomLayout() {
         byte[] encodedData = new byte[] { 0x00, 0x00, 0x00, 0x64 }; // Some encoded data
 
-        assertThrows(StructParsingException.class,
+//        assertThrows(StructParsingException.class,
+        assertThrows(StructDecodingException.class,
                 () -> StructDecoder.decode(InvalidCustomLayoutObject.class, encodedData, 0),
                 "Decoding with a broken custom layout should throw UnsupportedOperationException");
     }

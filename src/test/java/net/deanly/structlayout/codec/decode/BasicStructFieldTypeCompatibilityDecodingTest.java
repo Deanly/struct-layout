@@ -1,5 +1,6 @@
 package net.deanly.structlayout.codec.decode;
 
+import net.deanly.structlayout.exception.StructDecodingException;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.annotation.StructField;
 import net.deanly.structlayout.annotation.StructSequenceField;
@@ -71,7 +72,8 @@ public class BasicStructFieldTypeCompatibilityDecodingTest {
         int offset = 0;
 
         // Act & Assert: 타입 변환 실패 예외를 발생시킴
-        Exception exception = assertThrows(TypeConversionException.class, () -> {
+//        Exception exception = assertThrows(TypeConversionException.class, () -> {
+        Exception exception = assertThrows(StructDecodingException.class, () -> {
             StructDecoder.decode(IncompatibleStruct.class, data, offset);
         });
 

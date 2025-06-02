@@ -29,14 +29,6 @@ public @interface StructSequenceObjectField {
      *   <li>{@link OptionalEncoding#BORSH}:<br>
      *       The field is encoded with a 1-byte prefix: {@code 0x00} for {@code None}, {@code 0x01} followed by the value for {@code Some}.<br>
      *       This format is commonly used in Solana's Borsh serialization.</li>
-     *
-     *   <li>{@link OptionalEncoding#OMIT_IF_NULL}:<br>
-     *       The field is completely omitted from the serialized output if the value is {@code null}.<br>
-     *       This is typical in formats like Protobuf and FlatBuffers.</li>
-     *
-     *   <li>{@link OptionalEncoding#NULL_LITERAL}:<br>
-     *       A literal null value (e.g., {@code 0xC0} for nil) is written to the output to indicate {@code null}.<br>
-     *       This approach is used in formats like MessagePack or CBOR.</li>
      * </ul>
      *
      * <p>This option allows fine-grained control over the serialization behavior of nullable fields, especially when

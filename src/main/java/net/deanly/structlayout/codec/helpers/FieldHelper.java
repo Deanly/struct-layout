@@ -5,6 +5,7 @@ import net.deanly.structlayout.annotation.StructSequenceField;
 import net.deanly.structlayout.annotation.StructObjectField;
 import net.deanly.structlayout.annotation.StructSequenceObjectField;
 import net.deanly.structlayout.exception.FieldOrderException;
+import net.deanly.structlayout.support.Tuple2;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.type.helpers.DataTypeHelper;
 
@@ -71,6 +72,21 @@ public class FieldHelper {
             }
         }
         orderedFields.sort(Comparator.comparingInt(FieldHelper::getOrderValue));
+        return orderedFields;
+    }
+
+    public static List<Tuple2<Field, Integer>> getOrderedFieldsWithOrder(List<Field> fields) {
+        List<Tuple2<Field, Integer>> orderedFields = new ArrayList<>();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(StructSequenceField.class) ||
+                    field.isAnnotationPresent(StructObjectField.class) ||
+                    field.isAnnotationPresent(StructField.class) ||
+                    field.isAnnotationPresent(StructSequenceObjectField.class)) {
+                int order = getOrderValue(field);
+                orderedFields.add(Tuple2.of(field, order));
+            }
+        }
+        orderedFields.sort(Comparator.comparingInt(t -> t.second));
         return orderedFields;
     }
 

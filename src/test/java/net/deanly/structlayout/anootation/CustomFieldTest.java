@@ -2,6 +2,7 @@ package net.deanly.structlayout.anootation;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.deanly.structlayout.exception.StructDecodingException;
 import net.deanly.structlayout.type.FieldBase;
 import net.deanly.structlayout.StructLayout;
 import net.deanly.structlayout.annotation.StructField;
@@ -63,7 +64,8 @@ public class CustomFieldTest {
         byte[] invalidBuffer = "short_buffer".getBytes(); // Not 32 bytes long
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> StructLayout.decode(invalidBuffer, TestStruct.class));
+//        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> StructLayout.decode(invalidBuffer, TestStruct.class));
+        StructDecodingException exception = assertThrows(StructDecodingException.class, () -> StructLayout.decode(invalidBuffer, TestStruct.class));
         assertTrue(exception.getMessage().contains("publicKey"), "Exception message should contain 'publicKey'");
     }
 
