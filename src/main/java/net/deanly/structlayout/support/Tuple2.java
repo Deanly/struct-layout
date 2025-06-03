@@ -1,5 +1,10 @@
 package net.deanly.structlayout.support;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode
 public class Tuple2<F, S> {
     public final F first;
     public final S second;

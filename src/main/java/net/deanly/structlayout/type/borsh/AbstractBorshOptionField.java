@@ -134,79 +134,66 @@ import net.deanly.structlayout.type.FieldBase;
  */
 public abstract class AbstractBorshOptionField<T, F extends FieldBase<T>> extends FieldBase<T> implements DynamicSpanField {
 
+    private final F fieldInstance;
+
     public AbstractBorshOptionField() {
-        super(1);
+        super(1); // tag is 1 byte
+        this.fieldInstance = createField();
     }
 
+    /**
+     * Subclass must implement this to provide a concrete field instance.
+     */
     protected abstract F createField();
 
     @Override
     public byte[] encode(T value) {
-        // None 처리: 태그만 반환
         if (value == null) {
-            return new byte[]{0}; // 태그 0은 'None'을 나타냄
+            return new byte[]{0}; // Tag 0: None
         }
 
-        // Some 처리: 태그 + 내부 값 직렬화
-        F fieldInstance = createField();
-//        Object convertedValue = TypeConverterHelper.convertToType(value, fieldInstance.getValueType());
-//        @SuppressWarnings("unchecked")
-//        byte[] innerData = fieldInstance.encode((T) convertedValue);
-        byte[] innerData = fieldInstance.encode(value);
-
-        // 태그(1바이트) + 내부 값
-        byte[] result = new byte[1 + innerData.length];
-        result[0] = 1; // 태그 1은 'Some'을 나타냄
-        System.arraycopy(innerData, 0, result, 1, innerData.length);
-
+        byte[] inner = fieldInstance.encode(value);
+        byte[] result = new byte[1 + inner.length];
+        result[0] = 1; // Tag 1: Some
+        System.arraycopy(inner, 0, result, 1, inner.length);
         return result;
     }
 
     @Override
     public T decode(byte[] data, int offset) {
-        if (data == null) {
-            throw new IllegalArgumentException("Data cannot be null.");
-        }
-
         validateLength(data, offset);
+
+        if (data.length <= offset) {
+            throw new IllegalArgumentException("Insufficient data for Option tag at offset " + offset);
+        }
 
         byte tag = data[offset];
         if (tag == 0) {
-            // None
-            return null;
+            return null; // None
         } else if (tag == 1) {
-            // Some
-            F fieldInstance = createField();
             return fieldInstance.decode(data, offset + 1);
         } else {
-            throw new IllegalArgumentException("Invalid tag value: " + tag);
+            throw new IllegalArgumentException("Invalid Option tag value: " + tag);
         }
     }
 
     @Override
     public int calculateSpan(byte[] data, int offset) {
-        if (data == null) {
-            throw new IllegalArgumentException("Data cannot be null.");
-        }
-
-        if (offset < 0 || offset >= data.length) {
-            throw new IllegalArgumentException("Offset out of bounds.");
-        }
+        validateLength(data, offset);
 
         byte tag = data[offset];
         if (tag == 0) {
             return 1;
         } else if (tag == 1) {
-            Field<T> fieldInstance = createField();
             return 1 + fieldInstance.getSpan();
         } else {
-            throw new IllegalArgumentException("Invalid tag value: " + tag);
+            throw new IllegalArgumentException("Invalid Option tag value: " + tag);
         }
     }
 
     @Override
     public int getSpan() {
-        throw new UnsupportedOperationException("AbstractCOptionField does not have a fixed span.");
+        throw new UnsupportedOperationException("Borsh Option has variable span.");
     }
 
     @Override
